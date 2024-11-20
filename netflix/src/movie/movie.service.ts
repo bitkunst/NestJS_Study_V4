@@ -1,29 +1,27 @@
-import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Query } from '@nestjs/common';
-import { AppService } from './app.service';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { CreateMovieDto } from './dto/create-movie.dto';
+import { UpdateMovieDto } from './dto/update-movie.dto';
 
-interface Movie {
+export interface Movie {
     id: number;
     title: string;
+    genre: string;
 }
 
-@Controller('movie')
-export class AppController {
+@Injectable()
+export class MovieService {
     private movies: Movie[] = [
-        { id: 1, title: '해리포터' },
-        { id: 2, title: '반지의 제왕' },
+        { id: 1, title: '해리포터', genre: 'fantasy' },
+        { id: 2, title: '반지의 제왕', genre: 'action' },
     ];
     private idCounter: number = 3;
 
-    constructor(private readonly appService: AppService) {}
-
-    @Get()
-    getMovies(@Query('title') title: string) {
+    getManyMovies(title?: string) {
         if (!title) return this.movies;
         return this.movies.filter((m) => m.title.startsWith(title));
     }
 
-    @Get(':id')
-    getMovie(@Param('id') id: string) {
+    getMovieById(id: number) {
         const movie = this.movies.find((m) => m.id === +id);
         if (!movie) {
             throw new NotFoundException('존재하지 않는 ID의 영화입니다!');
@@ -32,29 +30,26 @@ export class AppController {
         return movie;
     }
 
-    @Post()
-    postMovie(@Body() { title }: Movie) {
+    createMovie(createMovieDto: CreateMovieDto) {
         const movie: Movie = {
             id: this.idCounter++,
-            title,
+            ...createMovieDto,
         };
         this.movies.push(movie);
         return movie;
     }
 
-    @Patch(':id')
-    patchMovie(@Param('id') id: string, @Body('title') title: string) {
+    updateMovie(id: number, updateMovieDto: UpdateMovieDto) {
         const movie = this.movies.find((m) => m.id === +id);
         if (!movie) {
             throw new NotFoundException('존재하지 않는 ID의 영화입니다!');
         }
 
-        Object.assign(movie, { title });
+        Object.assign(movie, updateMovieDto);
         return movie;
     }
 
-    @Delete(':id')
-    deleteMovie(@Param('id') id: string) {
+    deleteMovie(id: number) {
         const movieIndex = this.movies.findIndex((m) => m.id === +id);
         if (movieIndex === -1) {
             throw new NotFoundException('존재하지 않는 ID의 영화입니다!');
