@@ -15,7 +15,7 @@ import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 
 @Controller('movie')
-@UseInterceptors(ClassSerializerInterceptor)
+@UseInterceptors(ClassSerializerInterceptor) // class-transformer 적용
 export class MovieController {
     constructor(private readonly movieService: MovieService) {}
 
