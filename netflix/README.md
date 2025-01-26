@@ -33,12 +33,41 @@ class A {
 3. 확장성 부족
     - B 클래스의 구현을 바꾸기 어렵다. 예를 들어, B 클래스의 대체 구현이 필요할 때 유연하게 대처하기 힘들다.
 
-### IoC Container
+### Dependency Injection (DI)
+
+-   IoC를 할 수 있는 방법 중 하나
+
+```ts
+class B {
+    doSomething() {}
+}
+
+class A {
+    constructor(private readonly instance: B) {}
+
+    execute() {
+        this.instance.doSomething();
+    }
+}
+```
+
+### Inversion of Control (IoC)
 
 -   직접 특정 클래스를 인스턴스화 해서 주입하는 방식이 아닌, `제어의 주체를 역전`시키는 방식
 -   NestJS 자체 IoC Container에서 클래스를 인스턴스화 하고 의존성 주입을 실행
     -   IoC Container에서 인스턴스의 생성과 주입을 자동으로 해준다
 -   Module에서 providers로 등록된 클래스들은 IoC Container에서 알아서 관리 (Dependency Injection 수행)
+
+```ts
+import { Injectable } from '@nestjs/common';
+
+@Injectable()
+export class AppService {}
+/**
+ * @Injectable()로 annotate 해줬을 때 AppService를 DI로 활용할 수 있도록 IoC Container가 관리를 하게 된다.
+ * IoC Container는 AppService를 인스턴스화 해서 다른 코드에서 AppService를 필요로 할 때 자동으로 DI 수행
+ *  /
+```
 
 <br>
 
