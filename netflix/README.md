@@ -73,5 +73,6 @@ export class AppService {}
 
 ## Module, Controller, Service
 
+-   관리하고 싶은 하나의 Entity가 존재할 때마다 새로운 Module을 만들어서 해당 Module로 관련 코드를 묶어놓는다
 -   Controller에서는 들어오는 요청에 대한 processing만 수행
 -   Service에서는 비즈니스 로직 수행
