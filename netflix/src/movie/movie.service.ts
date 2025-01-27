@@ -40,7 +40,9 @@ export class MovieService {
         const movie: Movie = {
             id: this.idCounter++,
             ...createMovieDto,
-            description: `새로운 영화`,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            version: 0,
         };
         this.movies.push(movie);
         return movie;

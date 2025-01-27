@@ -2,7 +2,8 @@ import { Module } from '@nestjs/common';
 import { MovieModule } from './movie/movie.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import * as Joi from 'joi';
+import Joi from 'joi';
+import path from 'path';
 
 /**
  * @dev
@@ -32,7 +33,7 @@ import * as Joi from 'joi';
                 username: configService.get<string>('DB_USERNAME'),
                 password: configService.get<string>('DB_PASSWORD'),
                 database: configService.get<string>('DB_DATABASE'),
-                entities: [],
+                entities: [path.join(__dirname, '**/*.entity{.ts,.js}')],
                 synchronize: true,
             }),
             inject: [ConfigService],
