@@ -35,6 +35,7 @@ import path from 'path';
                 database: configService.get<string>('DB_DATABASE'),
                 entities: [path.join(__dirname, '**/*.entity{.ts,.js}')],
                 synchronize: true,
+                logging: true,
             }),
             inject: [ConfigService],
         }),

@@ -1,8 +1,10 @@
 // import { Exclude, Expose, Transform } from 'class-transformer';
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn, VersionColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseTable } from './base-table.entity';
+import { MovieDetail } from './movie-detail.entity';
 
 @Entity()
-export class Movie {
+export class Movie extends BaseTable {
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -12,14 +14,9 @@ export class Movie {
     @Column()
     genre: string;
 
-    @CreateDateColumn()
-    createdAt: Date;
-
-    @UpdateDateColumn()
-    updatedAt: Date;
-
-    @VersionColumn()
-    version: number;
+    @OneToOne(() => MovieDetail, (movieDetail) => movieDetail.movie, { cascade: true })
+    @JoinColumn({ name: 'detail_id' })
+    detail: MovieDetail;
 }
 
 // 보안에 민감한 경우 Entity 클래스 전체를 Exclude 하는 경우도 존재
