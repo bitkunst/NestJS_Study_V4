@@ -25,9 +25,7 @@ export class MovieService {
 
     async findOne(id: number) {
         const movie = await this.movieRepository.findOne({ where: { id }, relations: ['detail'] });
-        if (!movie) {
-            throw new NotFoundException('존재하지 않는 ID의 영화입니다!');
-        }
+        if (!movie) throw new NotFoundException('존재하지 않는 ID의 영화입니다!');
 
         return movie;
     }
@@ -46,9 +44,7 @@ export class MovieService {
 
     async update(id: number, updateMovieDto: UpdateMovieDto) {
         const movie = await this.movieRepository.findOne({ where: { id }, relations: ['detail'] });
-        if (!movie) {
-            throw new NotFoundException('존재하지 않는 ID의 영화입니다!');
-        }
+        if (!movie) throw new NotFoundException('존재하지 않는 ID의 영화입니다!');
 
         const { detail, ...movieRest } = updateMovieDto;
         await this.movieRepository.update({ id }, movieRest);
@@ -60,9 +56,7 @@ export class MovieService {
 
     async remove(id: number) {
         const movie = await this.movieRepository.findOne({ where: { id }, relations: ['detail'] });
-        if (!movie) {
-            throw new NotFoundException('존재하지 않는 ID의 영화입니다!');
-        }
+        if (!movie) throw new NotFoundException('존재하지 않는 ID의 영화입니다!');
 
         await this.movieRepository.delete(id);
         await this.movieDetailRepository.delete(movie.detail.id);
