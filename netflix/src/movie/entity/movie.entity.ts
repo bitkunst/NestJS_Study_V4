@@ -1,22 +1,30 @@
 // import { Exclude, Expose, Transform } from 'class-transformer';
-import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { BaseTable } from './base-table.entity';
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseTable } from 'src/common/entity/base-table.entity';
 import { MovieDetail } from './movie-detail.entity';
+import { Director } from 'src/director/entity/director.entity';
 
+// ManyToOne Director -> 감독은 여러개의 영화를 만들 수 있음
+// OneToOne MovieDetail -> 영화는 하나의 상세 내용을 가질 수 있음
+// ManyToMany Genre -> 영화는 여러개의 장르를 가질 수 있고 장르는 여러개의 영화에 속할 수 있음
 @Entity()
 export class Movie extends BaseTable {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
+    @Column({ unique: true })
     title: string;
 
     @Column()
     genre: string;
 
-    @OneToOne(() => MovieDetail, (movieDetail) => movieDetail.movie, { cascade: true })
+    @OneToOne(() => MovieDetail, (movieDetail) => movieDetail.movie, { cascade: true, nullable: false })
     @JoinColumn({ name: 'detail_id' })
     detail: MovieDetail;
+
+    @ManyToOne(() => Director, (director) => director.movies, { cascade: true, nullable: false })
+    @JoinColumn({ name: 'director_id' }) // column name을 지정하기 위해 사용 (원래는 @JoinColumn Annotation 추가하지 않아도 됨)
+    director: Director;
 }
 
 // 보안에 민감한 경우 Entity 클래스 전체를 Exclude 하는 경우도 존재

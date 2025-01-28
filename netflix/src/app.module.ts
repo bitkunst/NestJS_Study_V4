@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { MovieModule } from './movie/movie.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { DirectorModule } from './director/director.module';
 import Joi from 'joi';
 import path from 'path';
 
@@ -40,6 +41,7 @@ import path from 'path';
             inject: [ConfigService],
         }),
         MovieModule,
+        DirectorModule,
     ],
 })
 export class AppModule {}
