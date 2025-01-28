@@ -3,6 +3,7 @@ import { MovieModule } from './movie/movie.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DirectorModule } from './director/director.module';
+import { GenreModule } from './genre/genre.module';
 import Joi from 'joi';
 import path from 'path';
 
@@ -42,6 +43,7 @@ import path from 'path';
         }),
         MovieModule,
         DirectorModule,
+        GenreModule,
     ],
 })
 export class AppModule {}
