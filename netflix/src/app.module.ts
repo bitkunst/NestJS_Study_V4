@@ -4,6 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DirectorModule } from './director/director.module';
 import { GenreModule } from './genre/genre.module';
+import { AuthModule } from './auth/auth.module';
+import { UserModule } from './user/user.module';
 import Joi from 'joi';
 import path from 'path';
 
@@ -25,6 +27,9 @@ import path from 'path';
                 DB_USERNAME: Joi.string().required(),
                 DB_PASSWORD: Joi.string().required(),
                 DB_DATABASE: Joi.string().required(),
+                HASH_ROUNDS: Joi.number().required(),
+                ACCESS_TOKEN_SECRET: Joi.string().required(),
+                REFRESH_TOKEN_SECRET: Joi.string().required(),
             }),
         }),
         TypeOrmModule.forRootAsync({
@@ -44,6 +49,8 @@ import path from 'path';
         MovieModule,
         DirectorModule,
         GenreModule,
+        AuthModule,
+        UserModule,
     ],
 })
 export class AppModule {}
