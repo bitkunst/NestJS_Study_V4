@@ -20,26 +20,9 @@ export class AuthService {
         const { email, password } = this.parseBasicToken(rawToken);
         const user = await this.authenticate(email, password);
 
-        const refreshTokenSecret = this.configService.get<string>('REFRESH_TOKEN_SECRET');
-        const accessTokenSecret = this.configService.get(<string>'ACCESS_TOKEN_SECRET');
-
         return {
-            refreshToken: await this.jwtService.signAsync(
-                {
-                    sub: user.id,
-                    role: user.role,
-                    type: 'refresh',
-                },
-                { secret: refreshTokenSecret, expiresIn: '24h' },
-            ),
-            accessToken: await this.jwtService.signAsync(
-                {
-                    sub: user.id,
-                    role: user.role,
-                    type: 'access',
-                },
-                { secret: accessTokenSecret, expiresIn: 300 },
-            ),
+            refreshToken: await this.issueToken(user, true),
+            accessToken: await this.issueToken(user, false),
         };
     }
 
@@ -58,6 +41,23 @@ export class AuthService {
         await this.userRepository.save({ email, password: hash });
 
         return this.userRepository.findOne({ where: { email } });
+    }
+
+    async issueToken(user: User, isRefreshToken: boolean) {
+        const refreshTokenSecret = this.configService.get<string>('REFRESH_TOKEN_SECRET');
+        const accessTokenSecret = this.configService.get(<string>'ACCESS_TOKEN_SECRET');
+
+        return await this.jwtService.signAsync(
+            {
+                sub: user.id,
+                role: user.role,
+                type: isRefreshToken ? 'refresh' : 'access',
+            },
+            {
+                secret: isRefreshToken ? refreshTokenSecret : accessTokenSecret,
+                expiresIn: isRefreshToken ? '24h' : 300,
+            },
+        );
     }
 
     async authenticate(email: string, password: string) {
