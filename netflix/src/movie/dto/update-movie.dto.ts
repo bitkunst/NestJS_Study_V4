@@ -1,29 +1,10 @@
-import { ArrayNotEmpty, IsArray, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateMovieDto } from './create-movie.dto';
 /**
  * class-validator
  * IsDefined : null || undefined 체크
  * IsEmpty : null || undefined || '' 체크
  */
 
-export class UpdateMovieDto {
-    @IsNotEmpty()
-    @IsString()
-    @IsOptional()
-    title?: string;
-
-    @IsArray()
-    @ArrayNotEmpty()
-    @IsNumber({}, { each: true })
-    @IsOptional()
-    genreIds?: number[];
-
-    @IsNotEmpty()
-    @IsString()
-    @IsOptional()
-    detail?: string;
-
-    @IsNotEmpty()
-    @IsNumber()
-    @IsOptional()
-    directorId?: number;
-}
+// PartialType이 CreateMovieDto의 모든 프로퍼티들을 Optional로 만들어준다
+export class UpdateMovieDto extends PartialType(CreateMovieDto) {}
