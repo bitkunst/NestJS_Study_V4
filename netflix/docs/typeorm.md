@@ -56,6 +56,73 @@ export class User {
 }
 ```
 
+### Entity Embedding
+
+-   [reference](https://typeorm.io/embedded-entities)
+
+```ts
+export class Name {
+    @Column()
+    first: string;
+
+    @Column()
+    last: string;
+}
+
+@Entity()
+export class User {
+    @PrimaryGeneratedColumn()
+    id: string;
+
+    @Column(() => Name)
+    name: Name;
+
+    @Column()
+    isActive: boolean;
+}
+
+@Entity()
+export class Employee {
+    @PrimaryGeneratedColumn()
+    id: string;
+
+    @Column(() => Name)
+    name: Name;
+
+    @Column()
+    salary: number;
+}
+```
+
+### Entity Inheritance
+
+-   [reference](https://typeorm.io/entity-inheritance)
+
+```ts
+export abstract class Content {
+    @PrimaryGeneratedColumn()
+    id: number;
+
+    @Column()
+    title: string;
+
+    @Column()
+    description: string;
+}
+
+@Entity()
+export class Photo extends Content {
+    @Column()
+    size: string;
+}
+
+@Entity()
+export class Post extends Content {
+    @Column()
+    viewCount: number;
+}
+```
+
 ### Column 옵션
 
 -   `type: ColumnType` >> 칼럼 타입. varchar, text, int, bool 등 칼럼 타입
