@@ -16,6 +16,7 @@ class User {
     @IsEmail()
     email: string;
 }
+// Class Validator에서 제공해주는 어떤 Validator든 검증하고 싶은 프로퍼티에 Decorator로 제공해주면 된다
 
 const user = new User();
 user.name = '';
@@ -24,6 +25,7 @@ user.email = 'helloWorld';
 validate(user).then((errors) => {
     // 에러 반환
 });
+// validate() 함수로 객체를 검증했을 때 Class Validator에 부합하지 않은 값이 입력됐다면 해당되는 에러가 반환된다
 ```
 
 <br />
@@ -42,7 +44,7 @@ import {
 
 // Custom Validator
 @ValidatorConstraint({
-    async: true, // 비동기로 validation 수행
+    async: true, // async: true 옵션 설정시 비동기로 validation 수행 가능
 })
 class PasswordValidator implements ValidatorConstraintInterface {
     validate(value: any, validationArguments?: ValidationArguments): Promise<boolean> | boolean {
@@ -51,6 +53,7 @@ class PasswordValidator implements ValidatorConstraintInterface {
     }
 
     defaultMessage?(validationArguments?: ValidationArguments): string {
+        // $value를 사용해 실제 입력된 값을 출력 가능
         return '비밀번호의 길이는 4~8자여야 합니다. 입력된 비밀번호: ($value)';
     }
 }
@@ -58,9 +61,9 @@ class PasswordValidator implements ValidatorConstraintInterface {
 function IsValidPassword(validationOptions?: ValidationOptions) {
     return function (object: Object, propertyName: string) {
         registerDecorator({
-            target: object.constructor,
-            propertyName,
-            options: validationOptions,
+            target: object.constructor, // 디폴트값
+            propertyName, // 디폴트값
+            options: validationOptions, // 디폴트값
             validator: PasswordValidator,
         });
     };
@@ -68,7 +71,9 @@ function IsValidPassword(validationOptions?: ValidationOptions) {
 
 export class SomeDto {
     // @Validate(PasswordValidator)
-    @IsValidPassword()
+    @IsValidPassword({
+        message: '다른 메시지', // ValidationOptions
+    })
     password: string;
 }
 ```
@@ -90,9 +95,11 @@ class User {
     @Exclude()
     name: string;
 
+    // Transform 데코레이터를 사용해 커스터마이즈 가능
     @Transform(({ value }) => value.toUpperCase())
     email: string;
 }
+// Class Transformer에서 제공해주는 어떤 Transformer든 검증하고 싶은 프로퍼티에 Decorator로 제공해주면 된다
 
 const plainUser = {
     name: 'John',
@@ -155,3 +162,10 @@ const plainUser = {
 const user = plainToClass(User, plainUser);
 console.log(user.email); // john@example.com
 ```
+
+---
+
+### Class Validator & Class Transformer
+
+-   Class Validator는 값을 변환해주지 않는다 -> 값을 검증만 한다
+-   원하는 타입으로 변환해주는 것은 Class Transformer
