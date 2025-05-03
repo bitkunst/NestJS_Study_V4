@@ -51,3 +51,34 @@ const schema = Joi.object({
     }),
 });
 ```
+
+### Custom Validator
+
+-   `Joi.extend`를 사용해서 검증 메소드를 추가할 수 있다
+-   어떤 타입에 검증을 추가할지 입력하고 메시지와 검증 룰을 입력하면 된다
+-   extend 한 메소드는 등록한 타입에 체이닝해서 사용할 수 있다
+
+```ts
+const customJoi = Joi.extend((joi) => ({
+    type: 'string',
+    base: joi.string(),
+    messages: {
+        'string.isCapitalized': '"{{#label}}"은 대문자로 시작해야합니다!',
+    },
+    rules: {
+        isCapitalized: {
+            validate(value, helpers) {
+                if (value[0] !== value[0].toUpperCase()) {
+                    return helpers.error('string.isCapitalized');
+                }
+                return value;
+            },
+        },
+    },
+}));
+
+const schema = customJoi.object({
+    name: customJoi.string().isCapitalized().required(),
+    email: customJoi.string().email().required(),
+});
+```
