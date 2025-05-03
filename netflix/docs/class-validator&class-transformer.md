@@ -163,9 +163,46 @@ const user = plainToClass(User, plainUser);
 console.log(user.email); // john@example.com
 ```
 
+<br />
+
 ---
 
-### Class Validator & Class Transformer
+### Class Validator & Class Transformer 차이
 
--   Class Validator는 값을 변환해주지 않는다 -> 값을 검증만 한다
+-   Class Validator는 값을 변환해주지 않는다 → 값을 검증만 한다
 -   원하는 타입으로 변환해주는 것은 Class Transformer
+
+### Serialization(직렬화) & Deserialization(역직렬화)
+
+-   직렬화: class instance → plain object
+-   역직렬화: plain object → class instance
+
+**ValidationPipe({transform: true})**
+
+```ts
+// main.ts
+app.useGlobalPipes(new ValidationPipe({ transform: true }));
+
+// 컨트롤러 핸들러에 들어오는 @Body()는 자동으로 DTO 인스턴스로 변환됨
+@Post()
+create(@Body() dto: CreateUserDto) { … }
+```
+
+**ClassSerializerInterceptor**
+
+```ts
+@Controller('user')
+@UseInterceptors(ClassSerializerInterceptor)
+export class UserController {
+
+    // 컨트롤러 응답에 클래스 인스턴스를 return 하면 자동 직렬화
+    @Get()
+    getUser(): User { … }  // Expose/Exclude 규칙에 따라 반환됨
+}
+```
+
+### NestJS에서의 흐름
+
+1. 요청: JSON → ValidationPipe(transform: true) → DTO 인스턴스
+2. 비즈니스 로직: DTO → 서비스 → Entity 인스턴스
+3. 응답: Entity 인스턴스 → ClassSerializerInterceptor → plain object → JSON
