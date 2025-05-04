@@ -96,7 +96,7 @@ export class User {
     name: string;
 
     @OneToOne(() => Profile, (profile) => profile.user)
-    @JoinColumn()
+    @JoinColumn() // User 테이블에 profile_id로 칼럼 생성 (Profile 테이블에 대한 레퍼런스)
     profile: Profile;
 }
 ```
@@ -143,4 +143,6 @@ export class Question {
 ```
 
 -   ManyToMany Relationship도 OneToOne Relationship과 마찬가지로 `@JoinTable Annotation을 한쪽에 적용`해줘야 한다
+    -   서로가 각자에 대한 레퍼런스를 갖고 있지만 어떤 테이블이 주도적으로 관리할지 @JoinTable Annotation을 통해 지정할 수 있다
 -   중간 테이블이 생성될 때 @JoinTable이 적용된 테이블 이름이 먼저 위치하게 된다
+    -   ManyToMany의 경우 테이블 2개만으로 해결할 수 없다 -> 서로가 서로를 레퍼런스 하는 세번째 중간 테이블을 만들어줘야 한다
