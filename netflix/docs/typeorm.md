@@ -1,5 +1,11 @@
 ## TypeORM
 
+### ORM (Object Relational Mapping)
+
+-   ORM은 객체 지향 코드와 관계형 DB 구조 간의 불일치를 해소하기 위해 SQL 대신 클래스 기반으로 데이터를 다룰 수 있게 해주는 기술
+-   애플리케이션과 데이터베이스 연결시 SQL언어가 아닌 애플리케이션 개발언어로 데이터베이스를 접근할 수 있게 해주는 기술
+-   데이터베이스 레코드(row)를 클래스 인스턴스(instance)로, 테이블(table)을 클래스(class)로 매핑함으로써 SQL을 직접 쓰지 않고도 데이터베이스 조작이 가능
+
 ### TypeORM 특성
 
 -   OOP를 사용해서 데이터베이스 테이블을 클래스로 관리할 수 있게 해주는 ORM
@@ -36,8 +42,8 @@ const PostgresDataSource = new DataSource({
 ### Entity
 
 -   `@Entity` Annotation을 사용하면 클래스를 테이블로 관리할 수 있다
--   @Column Annotation을 사용하면 테이블의 칼럼을 생성할 수 있다
--   @PrimaryGeneratedColumn은 자동 생성되는 ID 칼럼을 생성할 수 있다
+-   `@Column` Annotation을 사용하면 테이블의 칼럼을 생성할 수 있다
+-   `@PrimaryGeneratedColumn`은 자동 생성되는 ID 칼럼을 생성할 수 있다
 
 ```ts
 @Entity()
@@ -59,6 +65,10 @@ export class User {
 ### Entity Embedding
 
 -   [reference](https://typeorm.io/embedded-entities)
+-   Entity Embedding을 통해 공유되는 값들을 별도의 클래스로 관리
+    -   여러 엔티티에 공통으로 들어가는 필드를 재사용 -> 중복 제거
+    -   프로퍼티 타입이 클래스 -> 객체가 Embedding 되어 있기 때문에 실제로 객체 형태로 인식 (새로운 객체가 들어가 있는 것처럼 표현됨)
+-   Embedded column은 자체 column을 가진 클래스를 받아서 현재 엔티티의 데이터베이스 테이블에 그 column들을 병합(merge)한다
 
 ```ts
 export class Name {
@@ -97,6 +107,8 @@ export class Employee {
 ### Entity Inheritance
 
 -   [reference](https://typeorm.io/entity-inheritance)
+-   중복을 없애고 추상화를 높이기 위해 공통 부분을 `추상 클래스`로 분리해서 관리
+    -   엔티티 상속 패턴 중 가장 간단하면서도 효과적인 방법으로 코드 중복을 크게 줄일 수 있다
 
 ```ts
 export abstract class Content {
@@ -117,6 +129,39 @@ export class Photo extends Content {
 }
 
 @Entity()
+export class Post extends Content {
+    @Column()
+    viewCount: number;
+}
+```
+
+### Single Table Inheritance
+
+-   서로 다른 클래스가 각자 고유한 프로퍼티를 가짐에도 불구하고, 데이터베이스에는 하나의 테이블에 모두 저장하는 패턴
+    -   아래의 설정을 사용하면 Content라는 단 하나의 테이블만 생성되고 Photo, Post의 모든 인스턴스가 이 테이블에 함께 저장된다
+    -   각 레코드는 type 컬럼으로 자신의 구체 클래스(Photo/Post)를 구분한다
+
+```ts
+@Entity()
+@TableInheritance({ column: { type: 'varchar', name: 'type' } })
+export class Content {
+    @PrimaryGeneratedColumn()
+    id: number;
+
+    @Column()
+    title: string;
+
+    @Column()
+    description: string;
+}
+
+@ChildEntity()
+export class Photo extends Content {
+    @Column()
+    size: string;
+}
+
+@ChildEntity()
 export class Post extends Content {
     @Column()
     viewCount: number;
@@ -171,4 +216,10 @@ export class User {
     @VersionColumn()
     version: number;
 }
+```
+
+### Dependencies
+
+```sh
+$ pnpm install @nestjs/config joi @nestjs/typeorm typeorm pg
 ```
