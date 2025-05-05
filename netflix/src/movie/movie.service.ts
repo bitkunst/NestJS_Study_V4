@@ -80,9 +80,9 @@ export class MovieService {
 
         /**
          * ! QueryBuilder 사용시 주의사항
-         * cascade 옵션으로 같이 생성 불가 -> 따로 생성해줘야 함
+         * cascade 옵션으로 같이 생성 불가 -> 따로 생성해줘야 함 (동시 생성 불가)
          * id값 넣어줄 때 OneToOne, ManyToOne, OneToMany는 자동으로 생성
-         * ManyToMany는 자동생성 X -> 따로 만들어줘야  함
+         * ManyToMany는 자동생성 X -> 따로 만들어줘야 함
          */
         const movieDetail = await this.movieRepository
             .createQueryBuilder()
@@ -102,7 +102,7 @@ export class MovieService {
             .values({
                 title: createMovieDto.title,
                 detail: {
-                    id: movieDetailId,
+                    id: movieDetailId, // id값을 넣어서 직접 연결을 시켜줘야 한다
                 },
                 director,
             })
@@ -114,7 +114,7 @@ export class MovieService {
             .createQueryBuilder()
             .relation(Movie, 'genres')
             .of(movieId)
-            .add(genres.map((genre) => genre.id));
+            .add(genres.map((genre) => genre.id)); // movie에 genre 관계 추가
 
         return await this.movieRepository.findOne({
             where: { id: movieId },
@@ -171,7 +171,7 @@ export class MovieService {
         if (detail) {
             await this.movieDetailRepository
                 .createQueryBuilder()
-                .update()
+                .update(MovieDetail)
                 .set({ detail })
                 .where('id = :id', { id: movie.detail.id })
                 .execute();
