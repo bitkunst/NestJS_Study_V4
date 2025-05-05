@@ -25,8 +25,8 @@ export class DirectorController {
     }
 
     @Get(':id')
-    getDirector(@Param('id', ParseIntPipe) id: string) {
-        return this.directorService.findOne(+id);
+    getDirector(@Param('id', ParseIntPipe) id: number) {
+        return this.directorService.findOne(id);
     }
 
     @Post()
@@ -35,12 +35,12 @@ export class DirectorController {
     }
 
     @Patch(':id')
-    patchDirector(@Param('id', ParseIntPipe) id: string, @Body() updateDirectorDto: UpdateDirectorDto) {
-        return this.directorService.update(+id, updateDirectorDto);
+    patchDirector(@Param('id', ParseIntPipe) id: number, @Body() updateDirectorDto: UpdateDirectorDto) {
+        return this.directorService.update(id, updateDirectorDto);
     }
 
     @Delete(':id')
-    deleteDirector(@Param('id', ParseIntPipe) id: string) {
-        return this.directorService.remove(+id);
+    deleteDirector(@Param('id', ParseIntPipe) id: number) {
+        return this.directorService.remove(id);
     }
 }

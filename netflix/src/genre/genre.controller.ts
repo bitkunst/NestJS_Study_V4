@@ -25,8 +25,8 @@ export class GenreController {
     }
 
     @Get(':id')
-    getGenre(@Param('id', ParseIntPipe) id: string) {
-        return this.genreService.findOne(+id);
+    getGenre(@Param('id', ParseIntPipe) id: number) {
+        return this.genreService.findOne(id);
     }
 
     @Post()
@@ -35,12 +35,12 @@ export class GenreController {
     }
 
     @Patch(':id')
-    patchGenre(@Param('id', ParseIntPipe) id: string, @Body() updateGenreDto: UpdateGenreDto) {
-        return this.genreService.update(+id, updateGenreDto);
+    patchGenre(@Param('id', ParseIntPipe) id: number, @Body() updateGenreDto: UpdateGenreDto) {
+        return this.genreService.update(id, updateGenreDto);
     }
 
     @Delete(':id')
-    deleteGenre(@Param('id', ParseIntPipe) id: string) {
-        return this.genreService.remove(+id);
+    deleteGenre(@Param('id', ParseIntPipe) id: number) {
+        return this.genreService.remove(id);
     }
 }
