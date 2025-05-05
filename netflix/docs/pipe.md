@@ -88,9 +88,31 @@ export class MovieController {
 
 -   모든 Validation Annotation이 적용되도록 해준다
 
+```ts
+@Get(':id')
+getMovie(@Param('id', new ParseIntPipe({
+    exceptionFactory(error) {
+        // exceptionFactory를 사용해서 에러 메시지 변경 가능
+        throw new BadRequestException('숫자를 입력해주세요')
+    },
+})) id: number) {
+    return this.movieService.findOne(id);
+}
+```
+
 ### DefaultValuePipe
 
 -   기본값을 설정한다
+
+```ts
+@Get(':id')
+getMovie(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('test', new DefaultValuePipe(10)) test: number,
+) {
+    return this.movieService.findOne(id);
+}
+```
 
 ### [그 외 Built-in Pipes](https://docs.nestjs.com/pipes#built-in-pipes)
 
