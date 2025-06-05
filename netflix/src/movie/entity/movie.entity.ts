@@ -28,10 +28,12 @@ export class Movie extends BaseTable {
     @ManyToMany(() => Genre, (genre) => genre.movies)
     @JoinTable({
         joinColumn: {
-            name: 'movie_id',
+            name: 'movie_id', // 조인 테이블에 생성될 현재 엔티티의 외래키 칼럼 이름
+            referencedColumnName: 'id', // 현재 엔티티의 어떤 칼럼을 참조할지 지정 (선택, 기본값 'id')
         },
         inverseJoinColumn: {
-            name: 'genre_id',
+            name: 'genre_id', // 조인 테이블에 생성될 반대 엔티티의 외래키 칼럼 이름
+            referencedColumnName: 'id', // 반대 엔티티의 어떤 칼럼을 참조할지 지정 (선택, 기본값 'id')
         },
     })
     genres: Genre[];

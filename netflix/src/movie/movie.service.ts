@@ -151,7 +151,7 @@ export class MovieService {
             if (detail) {
                 await qr.manager
                     .createQueryBuilder()
-                    .update()
+                    .update(MovieDetail)
                     .set({ detail })
                     .where('id = :id', { id: movie.detail.id })
                     .execute();
