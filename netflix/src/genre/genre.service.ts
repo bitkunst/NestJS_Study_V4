@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateGenreDto } from './dto/create-genre.dto';
 import { UpdateGenreDto } from './dto/update-genre.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,8 +13,10 @@ export class GenreService {
     ) {}
 
     async create(createGenreDto: CreateGenreDto) {
-        const genre = await this.genreRepository.save(createGenreDto);
-        return genre;
+        const genre = await this.genreRepository.findOne({ where: { name: createGenreDto.name } });
+        if (genre) throw new BadRequestException('이미 존재하는 장르입니다!');
+
+        return await this.genreRepository.save(createGenreDto);
     }
 
     async findAll() {
