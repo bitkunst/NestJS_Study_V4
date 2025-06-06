@@ -10,6 +10,8 @@ import Joi from 'joi';
 import path from 'path';
 import { envVariableKeys } from './common/constant/env.constant';
 import { BearerTokenMiddleware } from './auth/middleware/bearer-token.middleware';
+import { APP_GUARD } from '@nestjs/core';
+import { AuthGuard } from './auth/guard/auth.guard';
 
 /**
  * @dev
@@ -53,6 +55,13 @@ import { BearerTokenMiddleware } from './auth/middleware/bearer-token.middleware
         GenreModule,
         AuthModule,
         UserModule,
+    ],
+    providers: [
+        {
+            // Global하게 Guard 적용
+            provide: APP_GUARD,
+            useClass: AuthGuard,
+        },
     ],
 })
 export class AppModule implements NestModule {
