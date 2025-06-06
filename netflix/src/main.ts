@@ -9,6 +9,9 @@ async function bootstrap() {
         new ValidationPipe({
             whitelist: true,
             forbidNonWhitelisted: true,
+            transformOptions: {
+                enableImplicitConversion: true, // TS reflected type 기반으로 class-transformer가 입력된 값 변경 (class-transformer가 TS 파일 조회 후 해당 타입으로 변환)
+            },
         }),
     );
     await app.listen(process.env.PORT ?? 3000);
