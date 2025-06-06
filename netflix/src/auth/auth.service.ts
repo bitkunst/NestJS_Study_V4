@@ -17,7 +17,7 @@ export class AuthService {
     ) {}
 
     async login(rawToken: string) {
-        // raw token -> "Basic $token"
+        // rawToken -> "Basic $token"
         const { email, password } = this.parseBasicToken(rawToken);
         const user = await this.authenticate(email, password);
 
@@ -28,7 +28,7 @@ export class AuthService {
     }
 
     async register(rawToken: string) {
-        // raw token -> "Basic $token"
+        // rawToken -> "Basic $token"
         const { email, password } = this.parseBasicToken(rawToken);
 
         // email 중복 체크
@@ -81,8 +81,8 @@ export class AuthService {
         if (basic.toLowerCase() !== 'basic') throw new BadRequestException('토큰 포맷이 잘못됐습니다!');
 
         // 2) 추출한 토큰을 base64 디코딩해서 이메일과 비밀번호로 나눈다
-        const decoded = Buffer.from(token, 'base64').toString('utf-8');
         // "email:password"
+        const decoded = Buffer.from(token, 'base64').toString('utf-8');
 
         // [$email, $password]
         const tokenSplit = decoded.split(':');
@@ -101,18 +101,17 @@ export class AuthService {
         if (bearer.toLowerCase() !== 'bearer') throw new BadRequestException('토큰 포맷이 잘못됐습니다!');
 
         try {
-            const refreshTokenSecret = this.configService.get<string>(envVariableKeys.refreshTokenSecret);
-            const accessTokenSecret = this.configService.get<string>(envVariableKeys.accessTokenSecret);
-
-            const payload = await this.jwtService.verifyAsync(token, {
-                secret: isRefreshToken ? refreshTokenSecret : accessTokenSecret,
-            });
-
+            const decodedPayload = this.jwtService.decode(token);
             if (isRefreshToken) {
-                if (payload.type !== 'refresh') throw new BadRequestException('Refresh 토큰을 입력해주세요!');
+                if (decodedPayload.type !== 'refresh') throw new BadRequestException('Refresh 토큰을 입력해주세요!');
             } else {
-                if (payload.type !== 'access') throw new BadRequestException('Access 토큰을 입력해주세요!');
+                if (decodedPayload.type !== 'access') throw new BadRequestException('Access 토큰을 입력해주세요!');
             }
+
+            const secretKey = isRefreshToken ? envVariableKeys.refreshTokenSecret : envVariableKeys.accessTokenSecret;
+            const payload = await this.jwtService.verifyAsync(token, {
+                secret: this.configService.get<string>(secretKey),
+            });
 
             return payload;
         } catch (error) {
