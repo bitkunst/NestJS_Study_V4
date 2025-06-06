@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { MovieModule } from './movie/movie.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -9,6 +9,7 @@ import { UserModule } from './user/user.module';
 import Joi from 'joi';
 import path from 'path';
 import { envVariableKeys } from './common/constant/env.constant';
+import { BearerTokenMiddleware } from './auth/middleware/bearer-token.middleware';
 
 /**
  * @dev
@@ -45,7 +46,7 @@ import { envVariableKeys } from './common/constant/env.constant';
                 synchronize: true,
                 logging: true,
             }),
-            inject: [ConfigService],
+            inject: [ConfigService], // IoC 컨테이너에서 ConfigService를 inject
         }),
         MovieModule,
         DirectorModule,
@@ -54,4 +55,25 @@ import { envVariableKeys } from './common/constant/env.constant';
         UserModule,
     ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+    configure(consumer: MiddlewareConsumer) {
+        // consumer를 사용해 Middleware 적용
+        consumer
+            .apply(BearerTokenMiddleware)
+            .exclude(
+                {
+                    path: 'auth/login',
+                    method: RequestMethod.POST,
+                },
+                {
+                    path: 'auth/login/passport',
+                    method: RequestMethod.POST,
+                },
+                {
+                    path: 'auth/register',
+                    method: RequestMethod.POST,
+                },
+            )
+            .forRoutes('*');
+    }
+}
