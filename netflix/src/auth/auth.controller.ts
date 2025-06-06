@@ -2,17 +2,20 @@ import { Controller, Get, Headers, Post, Request, UseGuards } from '@nestjs/comm
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './strategy/local.strategy';
 import { JwtAuthGuard } from './strategy/jwt.strategy';
+import { Public } from './decorator/public.decorator';
 
 @Controller('auth')
 export class AuthController {
     constructor(private readonly authService: AuthService) {}
 
+    @Public()
     @Post('register')
     registerUser(@Headers('authorization') token: string) {
         // authorization: Basic $token
         return this.authService.register(token);
     }
 
+    @Public()
     @Post('login')
     loginUser(@Headers('authorization') token: string) {
         // authorization: Basic $token
@@ -26,6 +29,7 @@ export class AuthController {
         };
     }
 
+    @Public()
     @UseGuards(LocalAuthGuard)
     @Post('login/passport')
     async loginUserPassport(@Request() req) {
