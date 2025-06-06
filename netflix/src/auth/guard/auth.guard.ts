@@ -7,6 +7,7 @@ export class AuthGuard implements CanActivate {
     constructor(private readonly reflector: Reflector) {}
 
     canActivate(context: ExecutionContext): boolean {
+        console.log('AUTH GUARD');
         // 만약 @Public decoration이 되어 있으면 모든 로직을 bypass
         const isPublic = this.reflector.get(Public, context.getHandler()); // context.getHandler()로 가져온 문맥에서 Public 데코레이터를 가져온다
         // isPublic에는 Public 데코레이터에 입력된 객체가 들어온다

@@ -12,6 +12,7 @@ export class BearerTokenMiddleware implements NestMiddleware {
     ) {}
 
     async use(req: Request, res: Response, next: NextFunction) {
+        console.log('BEARER TOKEN MIDDLEWARE');
         // Bearer $token
         const authHeader = req.headers['authorization'];
         if (!authHeader) {
@@ -40,7 +41,8 @@ export class BearerTokenMiddleware implements NestMiddleware {
             req.user = payload;
             next();
         } catch (error) {
-            console.error(error);
+            // 토큰 만료일 경우에만 401
+            if (error.name === 'TokenExpiredError') throw new UnauthorizedException('토큰이 만료됐습니다!');
             next();
         }
     }

@@ -12,6 +12,7 @@ import { envVariableKeys } from './common/constant/env.constant';
 import { BearerTokenMiddleware } from './auth/middleware/bearer-token.middleware';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './auth/guard/auth.guard';
+import { RBACGuard } from './auth/guard/rbac.guard';
 
 /**
  * @dev
@@ -46,7 +47,7 @@ import { AuthGuard } from './auth/guard/auth.guard';
                 database: configService.get<string>(envVariableKeys.dbDatabase),
                 entities: [path.join(__dirname, '**/*.entity{.ts,.js}')],
                 synchronize: true,
-                logging: true,
+                // logging: true,
             }),
             inject: [ConfigService], // IoC 컨테이너에서 ConfigService를 inject
         }),
@@ -57,10 +58,15 @@ import { AuthGuard } from './auth/guard/auth.guard';
         UserModule,
     ],
     providers: [
+        // providers 배열에 나열된 순서대로 해당 가드들을 차례대로 실행
         {
             // Global하게 Guard 적용
             provide: APP_GUARD,
             useClass: AuthGuard,
+        },
+        {
+            provide: APP_GUARD,
+            useClass: RBACGuard,
         },
     ],
 })
