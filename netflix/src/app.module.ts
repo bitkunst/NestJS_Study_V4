@@ -10,10 +10,11 @@ import Joi from 'joi';
 import path from 'path';
 import { envVariableKeys } from './common/constant/env.constant';
 import { BearerTokenMiddleware } from './auth/middleware/bearer-token.middleware';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthGuard } from './auth/guard/auth.guard';
 import { RBACGuard } from './auth/guard/rbac.guard';
 import { ResponseTimeInterceptor } from './common/interceptor/response-time.interceptor';
+import { ForbiddenExceptionFilter } from './common/filter/forbidden.filter';
 
 /**
  * @dev
@@ -72,6 +73,10 @@ import { ResponseTimeInterceptor } from './common/interceptor/response-time.inte
         {
             provide: APP_INTERCEPTOR,
             useClass: ResponseTimeInterceptor,
+        },
+        {
+            provide: APP_FILTER,
+            useClass: ForbiddenExceptionFilter,
         },
     ],
 })
