@@ -48,9 +48,10 @@ export class MovieService extends CommonService {
         // }
 
         // Cursor pagination 적용시
-        this.applyCursorPaginationParamsToQb(qb, dto);
+        const { nextCursor } = await this.applyCursorPaginationParamsToQb(qb, dto);
+        const [data, count] = await qb.getManyAndCount();
 
-        return await qb.getManyAndCount();
+        return { data, nextCursor, count };
     }
 
     async findOne(id: number) {

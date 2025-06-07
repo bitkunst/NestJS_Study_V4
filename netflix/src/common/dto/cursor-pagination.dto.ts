@@ -1,13 +1,28 @@
-import { IsIn, IsInt, IsOptional } from 'class-validator';
+import { IsArray, IsInt, IsOptional, IsString } from 'class-validator';
 
 export class CursorPaginationDto {
-    @IsInt()
-    @IsOptional()
-    id?: number;
+    // Basic cursor pagination
+    // @IsInt()
+    // @IsOptional()
+    // id?: number;
 
-    @IsIn(['ASC', 'DESC'])
+    // @IsIn(['ASC', 'DESC'])
+    // @IsOptional()
+    // order: 'ASC' | 'DESC' = 'DESC';
+
+    // @IsInt()
+    // @IsOptional()
+    // take: number = 10;
+
+    // Multi cursor pagination
+    @IsString()
     @IsOptional()
-    order: 'ASC' | 'DESC' = 'DESC';
+    cursor?: string;
+
+    @IsArray()
+    @IsString({ each: true })
+    @IsOptional()
+    order: string[] = ['id_DESC']; // 예시: ['likeCount_DESC', 'id_DESC']
 
     @IsInt()
     @IsOptional()
