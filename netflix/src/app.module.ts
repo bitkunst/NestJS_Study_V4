@@ -10,9 +10,10 @@ import Joi from 'joi';
 import path from 'path';
 import { envVariableKeys } from './common/constant/env.constant';
 import { BearerTokenMiddleware } from './auth/middleware/bearer-token.middleware';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthGuard } from './auth/guard/auth.guard';
 import { RBACGuard } from './auth/guard/rbac.guard';
+import { ResponseTimeInterceptor } from './common/interceptor/response-time.interceptor';
 
 /**
  * @dev
@@ -67,6 +68,10 @@ import { RBACGuard } from './auth/guard/rbac.guard';
         {
             provide: APP_GUARD,
             useClass: RBACGuard,
+        },
+        {
+            provide: APP_INTERCEPTOR,
+            useClass: ResponseTimeInterceptor,
         },
     ],
 })
