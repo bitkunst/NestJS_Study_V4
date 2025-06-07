@@ -15,6 +15,7 @@ import { AuthGuard } from './auth/guard/auth.guard';
 import { RBACGuard } from './auth/guard/rbac.guard';
 import { ResponseTimeInterceptor } from './common/interceptor/response-time.interceptor';
 import { ForbiddenExceptionFilter } from './common/filter/forbidden.filter';
+import { QueryFailedExceptionFilter } from './common/filter/query-failed.filter';
 
 /**
  * @dev
@@ -77,6 +78,10 @@ import { ForbiddenExceptionFilter } from './common/filter/forbidden.filter';
         {
             provide: APP_FILTER,
             useClass: ForbiddenExceptionFilter,
+        },
+        {
+            provide: APP_FILTER,
+            useClass: QueryFailedExceptionFilter,
         },
     ],
 })
