@@ -1,3 +1,10 @@
+## Pagination
+
+-   Pagination이란 많은 데이터를 부분적으로 나눠서 불러오는 기술
+-   Pagination의 종류
+    -   Page Based Pagination
+    -   Cursor Based Pagination
+
 ## Page Based Pagination
 
 -   데이터를 페이지 기반으로 나눠서 처리한다

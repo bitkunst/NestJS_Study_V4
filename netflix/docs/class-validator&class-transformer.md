@@ -195,9 +195,9 @@ create(@Body() dto: CreateUserDto) { … }
 @UseInterceptors(ClassSerializerInterceptor)
 export class UserController {
 
-    // 컨트롤러 응답에 클래스 인스턴스를 return 하면 자동 직렬화
+    // 컨트롤러 응답에 클래스 인스턴스를 return 하면 자동 직렬화 (클래스 인스턴스 -> plain object)
     @Get()
-    getUser(): User { … }  // Expose/Exclude 규칙에 따라 반환됨
+    getUser(): User { … }  // Expose/Exclude 규칙에 따라 반환됨 (이미 존재하는 클래스 인스턴스의 프로퍼티에 붙은 메타데이터를 기준으로 작동)
 }
 ```
 
