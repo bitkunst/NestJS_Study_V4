@@ -17,5 +17,6 @@ export class CacheInterceptor implements NestInterceptor {
         }
 
         return next.handle().pipe(tap((response) => this.cache.set(key, response)));
+        // end-point 함수를 실행하고 응답받은 response를 tap()의 콜백함수에서 파라미터로 받을 수 있다
     }
 }

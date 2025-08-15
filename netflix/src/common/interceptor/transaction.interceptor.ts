@@ -19,6 +19,7 @@ export class TransactionInterceptor implements NestInterceptor {
         return next.handle().pipe(
             // 에러 발생시 catchError()의 콜백함수 실행
             catchError(async (e) => {
+                console.error(e);
                 await qr.rollbackTransaction();
                 await qr.release();
                 throw e;

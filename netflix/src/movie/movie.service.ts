@@ -108,6 +108,8 @@ export class MovieService extends CommonService {
             .of(movieId)
             .add(genres.map((genre) => genre.id));
 
+        // TransactionInterceptor를 사용해서 처리 -> post-request Interceptor에서 트랜잭션 커밋 진행
+        // 아직 DB에 반영 전이기 때문에 repository 사용 불가 -> qr.manager 사용 (같은 트랜잭션 안에서 데이터 조회)
         return await qr.manager.findOne(Movie, {
             where: { id: movieId },
             relations: ['detail', 'director', 'genres'],
