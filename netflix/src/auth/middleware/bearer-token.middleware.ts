@@ -4,6 +4,11 @@ import { JwtService } from '@nestjs/jwt';
 import { NextFunction, Request, Response } from 'express';
 import { envVariableKeys } from 'src/common/constant/env.constant';
 
+//* 토큰이 존재할 경우 Middleware는 토큰에 대한 정보를 request.user에 등록해주기만 할 뿐 -> 나머지 인증 로직은 Guard에서 수행
+/**
+ * Middleware: 데이터 추출·전처리 -> 토큰 추출
+ * Guard: 접근 제어(Authorization) -> 토큰 검증
+ */
 @Injectable()
 export class BearerTokenMiddleware implements NestMiddleware {
     constructor(
@@ -43,7 +48,7 @@ export class BearerTokenMiddleware implements NestMiddleware {
         } catch (error) {
             // 토큰 만료일 경우에만 401
             if (error.name === 'TokenExpiredError') throw new UnauthorizedException('토큰이 만료됐습니다!');
-            next();
+            next(); // Guard에서 이미 인증을 수행하고 있기 때문에 next() 호출
         }
     }
 
