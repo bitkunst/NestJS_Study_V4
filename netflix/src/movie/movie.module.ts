@@ -21,12 +21,12 @@ import { v4 } from 'uuid';
             // process.cwd() -> 프로젝트의 루트 경로
             storage: diskStorage({
                 destination: path.join(process.cwd(), 'public', 'movie'),
-                filename: (req, file, callback) => {
-                    const split = file.originalname.split('.');
-                    let extension = 'mp4';
-                    if (split.length > 1) extension = split[split.length - 1];
-                    callback(null, `${v4()}_${Date.now()}.${extension}`); // callback 파라미터로 '파일이름' 전달
-                },
+                // filename: (req, file, callback) => {
+                //     const split = file.originalname.split('.');
+                //     let extension = 'mp4';
+                //     if (split.length > 1) extension = split[split.length - 1];
+                //     callback(null, `${v4()}_${Date.now()}.${extension}`); // callback 파라미터로 '파일이름' 전달
+                // },
             }),
         }),
     ],
