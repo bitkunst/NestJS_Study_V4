@@ -10,7 +10,7 @@ export class ForbiddenExceptionFilter implements ExceptionFilter {
 
         const status = exception.getStatus();
 
-        console.log(`[UnauthorizedException] ${request.method} ${request.path}`);
+        console.log(`[ForbiddenException] ${request.method} ${request.path}`);
 
         response.status(status).json({
             statusCode: status,

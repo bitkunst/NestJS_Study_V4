@@ -1,6 +1,7 @@
 import { ArgumentsHost, Catch, ExceptionFilter } from '@nestjs/common';
 import { QueryFailedError } from 'typeorm';
 
+// QueryFailedError를 통해 일괄적으로 TypeOrm에서 발생한 에러를 잡을 수 있다
 @Catch(QueryFailedError)
 export class QueryFailedExceptionFilter implements ExceptionFilter {
     catch(exception: any, host: ArgumentsHost) {
