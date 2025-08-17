@@ -13,6 +13,7 @@ import { BaseTable } from 'src/common/entity/base-table.entity';
 import { MovieDetail } from './movie-detail.entity';
 import { Director } from 'src/director/entity/director.entity';
 import { Genre } from 'src/genre/entity/genre.entity';
+import { Transform } from 'class-transformer';
 
 // ManyToOne Director -> 감독은 여러개의 영화를 만들 수 있음
 // OneToOne MovieDetail -> 영화는 하나의 상세 내용을 가질 수 있음
@@ -50,6 +51,7 @@ export class Movie extends BaseTable {
     director: Director;
 
     @Column()
+    @Transform(({ value }) => `http://localhost:3000/${value}`)
     movieFilePath: string;
 }
 

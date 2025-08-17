@@ -19,4 +19,8 @@ export class CreateMovieDto {
     @IsNumber({}, { each: true }) // Array 안의 모든 값 검증
     @Type(() => Number) // Number 타입으로 transform
     genreIds: number[];
+
+    @IsNotEmpty()
+    @IsString()
+    movieFileName: string;
 }

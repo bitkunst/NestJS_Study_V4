@@ -17,6 +17,7 @@ import { ResponseTimeInterceptor } from './common/interceptor/response-time.inte
 import { ForbiddenExceptionFilter } from './common/filter/forbidden.filter';
 import { QueryFailedExceptionFilter } from './common/filter/query-failed.filter';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { CommonModule } from './common/common.module';
 
 /**
  * @dev
@@ -60,6 +61,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
             serveRoot: '/public/', // rootPath에서 서빙해주는 경로에 serveRoot를 붙였을 때 해당되는 파일들을 가져올 수 있다
             // 서버에서 파일을 찾을 때는 rootPath에서 찾는다 -> rootPath 경로에 있는 파일을 가져오기 위해서는 serveRoot를 앞에 붙여서 요청해야 한다
         }),
+        CommonModule,
         MovieModule,
         DirectorModule,
         GenreModule,

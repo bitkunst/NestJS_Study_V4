@@ -45,23 +45,9 @@ export class MovieController {
 
     @RBAC(Role.ADMIN)
     @UseInterceptors(TransactionInterceptor)
-    @UseInterceptors(
-        FileInterceptor('movie', {
-            // Multer Options
-            limits: {
-                fileSize: 20000000, // 20MB
-            },
-            fileFilter(req, file, callback) {
-                if (file.mimetype !== 'video/mp4') {
-                    return callback(new BadRequestException('MP4 타입만 업로드 가능합니다!'), false);
-                }
-                callback(null, true); // callback() 함수의 파라미터로 "에러", "파일 수신 여부" 전달
-            },
-        }),
-    )
     @Post()
-    postMovie(@Body() body: CreateMovieDto, @Request() req, @UploadedFile() file: Express.Multer.File) {
-        return this.movieService.create(body, file.filename, req.queryRunner);
+    postMovie(@Body() body: CreateMovieDto, @Request() req) {
+        return this.movieService.create(body, req.queryRunner);
     }
 
     @RBAC(Role.ADMIN)
