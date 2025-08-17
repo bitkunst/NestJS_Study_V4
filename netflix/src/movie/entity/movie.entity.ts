@@ -48,6 +48,9 @@ export class Movie extends BaseTable {
     @ManyToOne(() => Director, (director) => director.movies, { cascade: true, nullable: false })
     @JoinColumn({ name: 'director_id' }) // column name을 지정하기 위해 사용 (원래는 @JoinColumn Annotation 추가하지 않아도 됨)
     director: Director;
+
+    @Column()
+    movieFilePath: string;
 }
 
 // 보안에 민감한 경우 Entity 클래스 전체를 Exclude 하는 경우도 존재

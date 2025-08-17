@@ -9,6 +9,7 @@ import { Director } from 'src/director/entity/director.entity';
 import { Genre } from 'src/genre/entity/genre.entity';
 import { GetMoviesDto } from './dto/get-movies.dto';
 import { CommonService } from 'src/common/common.service';
+import path from 'path';
 
 @Injectable()
 export class MovieService extends CommonService {
@@ -64,7 +65,7 @@ export class MovieService extends CommonService {
         return movie;
     }
 
-    async create(createMovieDto: CreateMovieDto, qr: QueryRunner) {
+    async create(createMovieDto: CreateMovieDto, movieFileName: string, qr: QueryRunner) {
         // 관계가 존재할 경우 -> 관계 존재 여부 파악 후 서비스 로직 수행
         const director = await qr.manager.findOne(Director, { where: { id: createMovieDto.directorId } });
         if (!director) throw new NotFoundException('존재하지 않는 ID의 감독입니다!');
@@ -87,6 +88,8 @@ export class MovieService extends CommonService {
 
         const movieDetailId = movieDetail.identifiers[0].id;
 
+        const movieFolder = path.join('public', 'movie');
+
         const movie = await qr.manager
             .createQueryBuilder()
             .insert()
@@ -97,6 +100,7 @@ export class MovieService extends CommonService {
                     id: movieDetailId,
                 },
                 director,
+                movieFilePath: path.join(movieFolder, movieFileName),
             })
             .execute();
 

@@ -60,14 +60,8 @@ export class MovieController {
         }),
     )
     @Post()
-    postMovie(
-        @Body() body: CreateMovieDto,
-        @Request() req,
-        @UploadedFile(new MovieFilePipe({ maxSize: 20, mimeType: 'video/mp4' }))
-        files: Express.Multer.File,
-    ) {
-        console.log('files', files);
-        return this.movieService.create(body, req.queryRunner);
+    postMovie(@Body() body: CreateMovieDto, @Request() req, @UploadedFile() file: Express.Multer.File) {
+        return this.movieService.create(body, file.filename, req.queryRunner);
     }
 
     @RBAC(Role.ADMIN)
