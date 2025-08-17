@@ -59,14 +59,14 @@ export class MovieService extends CommonService {
     async findOne(id: number) {
         const movie = await this.movieRepository.findOne({
             where: { id },
-            relations: ['detail', 'director', 'genres'],
+            relations: ['detail', 'director', 'genres', 'creator'],
         });
         if (!movie) throw new NotFoundException('존재하지 않는 ID의 영화입니다!');
 
         return movie;
     }
 
-    async create(createMovieDto: CreateMovieDto, qr: QueryRunner) {
+    async create(createMovieDto: CreateMovieDto, userId: number, qr: QueryRunner) {
         // 관계가 존재할 경우 -> 관계 존재 여부 파악 후 서비스 로직 수행
         const director = await qr.manager.findOne(Director, { where: { id: createMovieDto.directorId } });
         if (!director) throw new NotFoundException('존재하지 않는 ID의 감독입니다!');
@@ -92,11 +92,6 @@ export class MovieService extends CommonService {
         const tempFolder = path.join('public', 'temp');
         const movieFolder = path.join('public', 'movie');
 
-        await rename(
-            path.join(process.cwd(), tempFolder, createMovieDto.movieFileName),
-            path.join(process.cwd(), movieFolder, createMovieDto.movieFileName),
-        );
-
         const movie = await qr.manager
             .createQueryBuilder()
             .insert()
@@ -108,6 +103,9 @@ export class MovieService extends CommonService {
                 },
                 director,
                 movieFilePath: path.join(movieFolder, createMovieDto.movieFileName),
+                creator: {
+                    id: userId,
+                },
             })
             .execute();
 
@@ -118,6 +116,11 @@ export class MovieService extends CommonService {
             .relation(Movie, 'genres')
             .of(movieId)
             .add(genres.map((genre) => genre.id));
+
+        await rename(
+            path.join(process.cwd(), tempFolder, createMovieDto.movieFileName),
+            path.join(process.cwd(), movieFolder, createMovieDto.movieFileName),
+        );
 
         // TransactionInterceptor를 사용해서 처리 -> post-request Interceptor에서 트랜잭션 커밋 진행
         // 아직 DB에 반영 전이기 때문에 repository 사용 불가 -> qr.manager 사용 (같은 트랜잭션 안에서 데이터 조회)
