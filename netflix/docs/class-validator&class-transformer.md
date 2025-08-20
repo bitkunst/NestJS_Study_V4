@@ -206,3 +206,17 @@ export class UserController {
 1. 요청: JSON → ValidationPipe(transform: true) → DTO 인스턴스
 2. 비즈니스 로직: DTO → 서비스 → Entity 인스턴스
 3. 응답: Entity 인스턴스 → ClassSerializerInterceptor → plain object → JSON
+
+**요청(Request) 방향: Deserialization 중심**
+
+-   (Express) 클라이언트의 JSON 바디 → JS 객체로 파싱
+-   `ValidationPipe({ transform: true })`가 켜져 있으면 </br>
+    → class-transformer가 plain → DTO 인스턴스로 변환(역직렬화) </br>
+    → class-validator가 DTO 인스턴스 기준으로 유효성 검사 </br>
+
+**응답(Response) 방향: Serialization 중심**
+
+-   서비스/컨트롤러가 클래스 인스턴스(엔티티/DTO)를 반환
+-   `ClassSerializerInterceptor`가 class-transformer의 `instanceToPlain()`을 호출 </br>
+    → @Exclude() / @Expose() / @Transform() 메타데이터를 읽어 직렬화 규칙에 따라 평문 객체로 변환 </br>
+    → 마지막에 Express가 평문 객체를 JSON 문자열로 직렬화하여 전송 </br>
