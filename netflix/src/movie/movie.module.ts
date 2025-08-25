@@ -6,11 +6,13 @@ import { Movie } from './entity/movie.entity';
 import { MovieDetail } from './entity/movie-detail.entity';
 import { Director } from 'src/director/entity/director.entity';
 import { Genre } from 'src/genre/entity/genre.entity';
+import { MovieUserLike } from './entity/movie-user-like.entity';
+import { User } from 'src/user/entity/user.entity';
 
 // TypeOrmModule.forFeature([])
 // TypeOrm에서 엔티티에 해당하는 레포지토리를 만들어서 IoC 컨테이너가 inject 해줄 수 있게 등록
 @Module({
-    imports: [TypeOrmModule.forFeature([Movie, MovieDetail, Director, Genre])],
+    imports: [TypeOrmModule.forFeature([Movie, MovieDetail, MovieUserLike, Director, Genre, User])],
     controllers: [MovieController],
     providers: [MovieService],
 })
