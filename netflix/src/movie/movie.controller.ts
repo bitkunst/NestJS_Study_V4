@@ -28,6 +28,7 @@ import { MovieFilePipe } from './pipe/movie-file.pipe';
 import { UserId } from 'src/user/decorator/user-id.decorator';
 import { QueryRunner } from 'src/common/decorator/query-runner.decorator';
 import { QueryRunner as QR } from 'typeorm';
+// import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
 
 @Controller('movie')
 @UseInterceptors(ClassSerializerInterceptor) // class-transformer 적용
@@ -38,6 +39,15 @@ export class MovieController {
     @Get()
     getMovies(@Query() dto: GetMoviesDto, @UserId() userId?: number) {
         return this.movieService.findAll(dto, userId);
+    }
+
+    /* /movie/recent */
+    // @UseInterceptors(CacheInterceptor)
+    // @CacheKey('getMoviesRecent')
+    // @CacheTTL(1000)
+    @Get('recent')
+    getMoviesRecent() {
+        return this.movieService.findRecent();
     }
 
     @Public()
