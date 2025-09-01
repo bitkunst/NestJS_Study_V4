@@ -34,7 +34,7 @@ export class MovieService extends CommonService {
         super();
     }
 
-    async findAll(dto: GetMoviesDto) {
+    async findAll(dto: GetMoviesDto, userId?: number) {
         // Page pagination 적용시
         // const { title, take, page } = dto;
 
@@ -57,7 +57,38 @@ export class MovieService extends CommonService {
 
         // Cursor pagination 적용시
         const { nextCursor } = await this.applyCursorPaginationParamsToQb(qb, dto);
-        const [data, count] = await qb.getManyAndCount();
+        let [data, count] = await qb.getManyAndCount();
+
+        if (userId) {
+            const movieIds = data.map((movie) => movie.id);
+            const likedMovies =
+                movieIds.length < 1
+                    ? []
+                    : await this.movieUserLikeRepository
+                          .createQueryBuilder('mul')
+                          .leftJoinAndSelect('mul.user', 'user')
+                          .leftJoinAndSelect('mul.movie', 'movie')
+                          .where('movie.id IN (:...movieIds)', { movieIds })
+                          .andWhere('user.id = :userId', { userId })
+                          .getMany();
+
+            console.log('likedMovies', likedMovies);
+
+            // Map 형태로 Like/Dislike 데이터 반환
+            // { movieId: boolean }
+            const likedMovieMap = likedMovies.reduce(
+                (acc, next) => ({
+                    ...acc,
+                    [next.movie.id]: next.isLike,
+                }),
+                {},
+            );
+
+            data = data.map((v) => {
+                (v as any).likeStatus = v.id in likedMovieMap ? likedMovieMap[v.id] : null;
+                return v;
+            });
+        }
 
         return { data, nextCursor, count };
     }
