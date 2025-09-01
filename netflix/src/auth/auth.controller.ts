@@ -1,4 +1,4 @@
-import { Controller, Get, Headers, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Post, Request, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './strategy/local.strategy';
 import { JwtAuthGuard } from './strategy/jwt.strategy';
@@ -20,6 +20,12 @@ export class AuthController {
     loginUser(@Headers('authorization') token: string) {
         // authorization: Basic $token
         return this.authService.login(token);
+    }
+
+    // 추후 @RBAC 적용
+    @Post('token/block')
+    blockToken(@Body('token') token: string) {
+        return this.authService.tokenBlock(token);
     }
 
     @Post('token/access')
