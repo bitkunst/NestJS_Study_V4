@@ -28,6 +28,7 @@ import { MovieFilePipe } from './pipe/movie-file.pipe';
 import { UserId } from 'src/user/decorator/user-id.decorator';
 import { QueryRunner } from 'src/common/decorator/query-runner.decorator';
 import { QueryRunner as QR } from 'typeorm';
+import { Throttle } from 'src/common/decorator/throttle.decorator';
 // import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
 
 @Controller('movie')
@@ -36,6 +37,7 @@ export class MovieController {
     constructor(private readonly movieService: MovieService) {}
 
     @Public()
+    @Throttle({ count: 10, unit: 'minute' })
     @Get()
     getMovies(@Query() dto: GetMoviesDto, @UserId() userId?: number) {
         return this.movieService.findAll(dto, userId);
