@@ -20,6 +20,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { CommonModule } from './common/common.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ThrottleInterceptor } from './common/interceptor/throttle.interceptor';
+import { ScheduleModule } from '@nestjs/schedule';
 
 /**
  * @dev
@@ -67,6 +68,7 @@ import { ThrottleInterceptor } from './common/interceptor/throttle.interceptor';
             ttl: 10 * 1000, // millisecond
             isGlobal: true,
         }),
+        ScheduleModule.forRoot(),
         CommonModule,
         MovieModule,
         DirectorModule,
