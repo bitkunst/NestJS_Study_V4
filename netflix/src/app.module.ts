@@ -21,6 +21,8 @@ import { CommonModule } from './common/common.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ThrottleInterceptor } from './common/interceptor/throttle.interceptor';
 import { ScheduleModule } from '@nestjs/schedule';
+import { WinstonModule } from 'nest-winston';
+import * as winston from 'winston';
 
 /**
  * @dev
@@ -69,6 +71,30 @@ import { ScheduleModule } from '@nestjs/schedule';
             isGlobal: true,
         }),
         ScheduleModule.forRoot(),
+        WinstonModule.forRoot({
+            level: 'debug',
+            transports: [
+                new winston.transports.Console({
+                    format: winston.format.combine(
+                        winston.format.colorize({ all: true }),
+                        winston.format.timestamp(),
+                        winston.format.printf(
+                            (info) => `${info.timestamp} [${info.context}] ${info.level} ${info.message}`,
+                        ),
+                    ),
+                }),
+                new winston.transports.File({
+                    dirname: path.join(process.cwd(), 'logs'),
+                    filename: 'logs.log',
+                    format: winston.format.combine(
+                        winston.format.timestamp(),
+                        winston.format.printf(
+                            (info) => `${info.timestamp} [${info.context}] ${info.level} ${info.message}`,
+                        ),
+                    ),
+                }),
+            ],
+        }),
         CommonModule,
         MovieModule,
         DirectorModule,

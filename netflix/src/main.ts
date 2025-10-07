@@ -1,9 +1,16 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule);
+    const app = await NestFactory.create(AppModule, {
+        logger: ['verbose'],
+    });
+
+    // Winston 사용
+    app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
+
     // ValidationPipe uses the class-validator and class-transformer libraries
     app.useGlobalPipes(
         new ValidationPipe({
