@@ -2,10 +2,26 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule, {
         logger: ['verbose'],
+    });
+
+    // Swagger
+    const config = new DocumentBuilder()
+        .setTitle('Netflix')
+        .setDescription('넷플릭스 클론 API')
+        .setVersion('1.0')
+        .addBasicAuth()
+        .addBearerAuth()
+        .build();
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('docs', app, document, {
+        swaggerOptions: {
+            persistAuthorization: true,
+        },
     });
 
     // Winston 사용

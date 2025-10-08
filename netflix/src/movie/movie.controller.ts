@@ -29,8 +29,10 @@ import { UserId } from 'src/user/decorator/user-id.decorator';
 import { QueryRunner } from 'src/common/decorator/query-runner.decorator';
 import { QueryRunner as QR } from 'typeorm';
 import { Throttle } from 'src/common/decorator/throttle.decorator';
+import { ApiBearerAuth } from '@nestjs/swagger';
 // import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
 
+@ApiBearerAuth()
 @Controller('movie')
 @UseInterceptors(ClassSerializerInterceptor) // class-transformer 적용
 export class MovieController {
