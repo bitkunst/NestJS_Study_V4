@@ -9,6 +9,7 @@ import { UserService } from 'src/user/user.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import bcrypt from 'bcrypt';
+import { envVariableKeys } from 'src/common/constant/env.constant';
 
 const mockUserRepository = {
     findOne: jest.fn(),
@@ -135,6 +136,32 @@ describe('AuthService', () => {
                 secret: 'secret',
             });
             expect(result).toEqual(payload);
+        });
+
+        it('should use ACCESS_TOKEN_SECRET when isRefreshToken parameter is false', async () => {
+            const rawToken = 'Bearer token';
+            const payload = { type: 'access' };
+            jest.spyOn(mockJwtService, 'decode').mockReturnValue(payload);
+            jest.spyOn(mockJwtService, 'verifyAsync').mockResolvedValue(payload);
+            jest.spyOn(mockConfigService, 'get').mockReturnValue('secret'); // 반환값은 고정
+
+            await authService.parseBearerToken(rawToken, false);
+
+            expect(configService.get).toHaveBeenCalledWith(envVariableKeys.accessTokenSecret);
+            expect(jwtService.verifyAsync).toHaveBeenCalledWith('token', { secret: 'secret' });
+        });
+
+        it('should use REFRESH_TOKEN_SECRET when isRefreshToken parameter is true', async () => {
+            const rawToken = 'Bearer token';
+            const payload = { type: 'refresh' };
+            jest.spyOn(mockJwtService, 'decode').mockReturnValue(payload);
+            jest.spyOn(mockJwtService, 'verifyAsync').mockResolvedValue(payload);
+            jest.spyOn(mockConfigService, 'get').mockReturnValue('secret'); // 반환값은 고정
+
+            await authService.parseBearerToken(rawToken, true);
+
+            expect(mockConfigService.get).toHaveBeenCalledWith(envVariableKeys.refreshTokenSecret);
+            expect(jwtService.verifyAsync).toHaveBeenCalledWith('token', { secret: 'secret' });
         });
 
         it('should throw a BadRequestException for invalid Bearer token format', () => {
