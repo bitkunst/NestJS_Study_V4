@@ -178,3 +178,316 @@ describe('UserService with Fake', () => {
 -   **_로직이 없는 코드_**
     -   초보자들이 coverage를 올리기 위해서 흔히 하는 실수다. NestJS를 예를들면 Dto나 Entity를 테스트할 필요 없다
     -   그냥 ignore 리스트에 넣어버리자
+
+<br />
+
+---
+
+<br />
+
+### Jest
+
+-   `jest.fn()`
+    -   정의: jest.fn()은 독립 모의 함수(mock function)를 생성하는 유틸리티이다. 특정 객체의 메소드를 감싸는 jest.spyOn()과 달리, 어떤 객체에도 속하지 않은 함수 더블을 만들 때 사용한다
+    -   기본 동작: 인자 없이 jest.fn()만 호출하면 아무 동작도 하지 않고 undefined를 반환하는 함수가 생성된다
+    -   반환값: jest.fn()은 모의 함수 객체(jest.Mock)를 반환한다. 이 객체는 함수로서 호출 가능하며 동시에 모킹 상태(state)와 제어 메서드(API)를 제공한다
+-   `jest.spyOn()`
+    -   jest.spyOn(obj, 'method')
+    -   정의: 객체의 특정 메소드(또는 접근자 getter/setter)를 스파이 가능(mock 가능)한 래퍼로 바꾼다
+    -   기본 동작: 스파이 직후에는 원래 구현을 그대로 호출(call-through)한다. 이후 필요할 때 mockImplementation, mockReturnValue, mockResolvedValue 등으로 동작을 교체한다
+    -   반환값: jest.SpyInstance<Return, Args> — 호출 기록 검증 및 mock 동작 제어 API를 제공
+
+### Jest 설정
+
+-   `"rootDir": "."`
+    -   rootDir은 기준 경로(베이스)를 정하는 옵션
+    -   rootDir은 모든 경로 패턴의 기준 디렉토리
+        -   `<rootDir>`의 토큰값이 되며 "moduleNameMapper", "collectCoverageFrom", "testRegex" 등의 상대 기준점이 된다
+    -   "rootDir": "."은 “프로젝트 루트를 기준으로 삼는다”는 뜻
+        -   탐색 범위를 제한하지는 않는다
+-   `"roots: ["src"]"`
+    -   roots는 Jest가 테스트/모듈을 탐색할 디렉토리 집합을 한정하는 옵션
+    -   Jest가 파일을 스캔할 디렉토리 목록
+        -   지정한 디렉토리 밖에 있는 테스트/모듈은 탐색하지 않는다
+        -   `"roots": ["src"]`이면, src 하위만 스캔
+    -   기본값: `["<rootDir>"]`
+
+```json
+{
+    "jest": {
+        "moduleFileExtensions": ["js", "json", "ts"],
+        // rootDir은 지정하지 않았으므로 "기본값 = 프로젝트 루트"
+        "roots": ["src"], // 테스트의 탐색 범위가 src 디렉토리로 제한
+        "testRegex": ".*\\.spec\\.ts$",
+        "transform": {
+            "^.+\\.(t|j)s$": "ts-jest"
+        },
+        "collectCoverageFrom": ["**/*.(t|j)s"],
+        "coveragePathIgnorePatterns": [
+            "module.ts",
+            "dto.ts",
+            "entity.ts",
+            "guard.ts",
+            "middleware.ts",
+            "strategy.ts",
+            "decorator.ts",
+            "pipe.ts",
+            "common/*",
+            "main.ts"
+        ],
+        "coverageDirectory": "./coverage",
+        "testEnvironment": "node",
+        "moduleNameMapper": {
+            // 여기서 <rootDir>은 "프로젝트 루트"를 의미
+            // import 'src/...' -> 실제 경로 /<프로젝트 루트>/src/... 로 매핑
+            "src/(.*)": "<rootDir>/src/$1"
+        }
+    }
+}
+```
+
+### Jest Automock 라이브러리
+
+```sh
+# 모킹함수를 자동으로 만들어주는 라이브러리
+# NestJS에서 automock을 사용할 수 있도록 제공해주는 어댑터
+$ npm i -D @automock/jest @automock/adapters.nestjs
+```
+
+```ts
+// 기존 테스트 코드
+import { Test, TestingModule } from '@nestjs/testing';
+import { MovieService } from './movie.service';
+import { Movie } from './entity/movie.entity';
+import { getRepositoryToken } from '@nestjs/typeorm';
+
+const mockMovieRepository = {
+    find: jest.fn(),
+    findOne: jest.fn(),
+    // 기타 레포지토리 함수 모킹
+    // ...
+};
+
+describe('MovieService', () => {
+    let movieService: MovieService;
+    let movieRepository: Repository<Movie>;
+
+    beforeEach(async () => {
+        const module: TestingModule = await Test.createTestingModule({
+            providers: [
+                MovieService,
+                {
+                    provide: getRepositoryToken(Movie),
+                    useValue: mockMovieRepository,
+                },
+            ],
+        }).compile();
+
+        movieService = module.get<MovieService>(MovieService);
+        movieRepository = module.get<Repository<Movie>>(getRepositoryToken(Movie));
+    });
+
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('should be defined', () => {
+        expect(movieService).toBeDefined();
+    });
+});
+```
+
+```ts
+// automock 사용 테스트 코드
+import { DataSource, Repository } from 'typeorm';
+import { MovieService } from './movie.service';
+import { TestBed } from '@automock/jest';
+import { Movie } from './entity/movie.entity';
+import { MovieDetail } from './entity/movie-detail.entity';
+import { Director } from 'src/director/entity/director.entity';
+import { Genre } from 'src/genre/entity/genre.entity';
+import { User } from 'src/user/entity/user.entity';
+import { MovieUserLike } from './entity/movie-user-like.entity';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
+import { getRepositoryToken } from '@nestjs/typeorm';
+
+describe('MovieService', () => {
+    let movieService: MovieService;
+    // jest.Mocked<> 형태로 타입 지정을 할 경우 jest.spyOn() 없이도 mock 값 주입 가능
+    let movieRepository: jest.Mocked<Repository<Movie>>;
+    let movieDetailRepository: jest.Mocked<Repository<MovieDetail>>;
+    let directorRepository: jest.Mocked<Repository<Director>>;
+    let genreRepository: jest.Mocked<Repository<Genre>>;
+    let userRepository: jest.Mocked<Repository<User>>;
+    let movieUserLikeRepository: jest.Mocked<Repository<MovieUserLike>>;
+    let dataSource: jest.Mocked<DataSource>;
+    let cacheManager: Cache;
+
+    beforeEach(async () => {
+        // TestBed.create() 메소드의 파라미터로 실제 테스트 하고 싶은 클래스를 넣어주면 된다
+        // @nestjs/testing의 Test 클래스를 사용해서 테스트 값들을 컴파일 하는 것과 동일
+        const { unit, unitRef } = TestBed.create(MovieService).compile();
+        // unit: TestBed.create() 파라미터로 넣은 클래스의 인스턴스 (여기서는 MovieService)
+
+        // TestBed에서 자동으로 MovieService에 있는 모든 dependency들을 모킹해 놓았기 때문에 unitRef를 통해 값을 가져오면 된다
+        // MovieService에 주입되는 모든 클래스의 메소드들은 TestBed에 의해 자동으로 jest.fn()으로 모킹되어 있다
+        movieService = unit;
+        movieRepository = unitRef.get(getRepositoryToken(Movie) as string);
+        movieDetailRepository = unitRef.get(getRepositoryToken(MovieDetail) as string);
+        directorRepository = unitRef.get(getRepositoryToken(Director) as string);
+        genreRepository = unitRef.get(getRepositoryToken(Genre) as string);
+        userRepository = unitRef.get(getRepositoryToken(User) as string);
+        movieUserLikeRepository = unitRef.get(getRepositoryToken(MovieUserLike) as string);
+        dataSource = unitRef.get(DataSource);
+        cacheManager = unitRef.get(CACHE_MANAGER);
+    });
+
+    it('should be defined', () => {
+        expect(movieService).toBeDefined();
+    });
+
+    afterAll(() => {
+        jest.clearAllMocks();
+    });
+});
+```
+
+<br />
+
+---
+
+<br />
+
+### Integration Test
+
+-   Integration Test -> 모킹 없이 실질적인 로직을 테스트
+-   Unit Test에서는 coverage를 올려야 하고 각각의 함수들이 어떤 파라미터로 실행되고 어떤 값을 반환하는지가 중요
+-   Integration Test, End-to-End 테스트로 갈수록 흐름을 체크
+    -   가장 작은 단위는 Unit Test
+    -   Unit Test들을 합친 것이 Integration Test
+    -   끝과 끝을 실행하는 것이 End-to-End Test
+-   coverage는 이미 Unit Test에서 올렸기 때문에 기능적인 부분들에 집중
+-   Integration Test에서는 Unit들의 상호작용을 테스트
+
+```sh
+# Integration Test 진행시 SQLite 주로 사용
+$ npm i -D sqlite3
+```
+
+```ts
+import { Cache, CACHE_MANAGER, CacheModule } from '@nestjs/cache-manager';
+import { Test, TestingModule } from '@nestjs/testing';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Movie } from './entity/movie.entity';
+import { MovieDetail } from './entity/movie-detail.entity';
+import { Director } from 'src/director/entity/director.entity';
+import { Genre } from 'src/genre/entity/genre.entity';
+import { User } from 'src/user/entity/user.entity';
+import { MovieUserLike } from './entity/movie-user-like.entity';
+import { MovieService } from './movie.service';
+import { DataSource } from 'typeorm';
+
+// 테스트 목적: TypeORM 모듈 API가 우리가 작성한 로직과 정상적으로 실행이 되는가
+// 검증하고 싶은 것은 TypeORM과 우리 로직 간의 Integration (Unit과 Unit의 조합)
+// Unit 테스트에서 모킹했던 것들을 없애고 실제 Repository가 존재하는 형태로 테스트 진행
+// Integration Test -> 모킹 없이 실질적인 로직을 테스트
+describe('MovieService - Integration Test', () => {
+    let movieService: MovieService;
+    let cacheManager: Cache;
+    let dataSource: DataSource;
+
+    let movies: Movie[];
+    let directors: Director[];
+    let genres: Genre[];
+    let users: User[];
+
+    beforeAll(async () => {
+        const module: TestingModule = await Test.createTestingModule({
+            // AppModule에서 글로벌하게 import 하고 있는 모듈들도 포함
+            imports: [
+                CacheModule.register(),
+                TypeOrmModule.forRoot({
+                    type: 'sqlite',
+                    database: ':memory:', // 메모리 안에 DB 구축
+                    dropSchema: true,
+                    entities: [Movie, MovieDetail, Director, Genre, User, MovieUserLike],
+                    synchronize: true,
+                    logging: false,
+                }), // 실제 데이터베이스 연동은 e2e 테스트에서 진행
+                TypeOrmModule.forFeature([Movie, MovieDetail, Director, Genre, User, MovieUserLike]),
+            ],
+            providers: [MovieService],
+        }).compile();
+
+        movieService = module.get<MovieService>(MovieService);
+        cacheManager = module.get<Cache>(CACHE_MANAGER);
+        dataSource = module.get<DataSource>(DataSource);
+    });
+
+    it('should be defined', () => {
+        expect(movieService).toBeDefined();
+    });
+
+    afterAll(async () => {
+        await dataSource.destroy();
+    });
+
+    // SQLite DB에 실제 데이터 seeding (모킹 X)
+    beforeEach(async () => {
+        await cacheManager.clear();
+
+        const movieRepository = dataSource.getRepository(Movie);
+        const movieDetailRepository = dataSource.getRepository(MovieDetail);
+        const directorRepository = dataSource.getRepository(Director);
+        const genreRepository = dataSource.getRepository(Genre);
+        const userRepository = dataSource.getRepository(User);
+        const movieUserLikeRepository = dataSource.getRepository(MovieUserLike);
+
+        // Seed 데이터 생성
+        users = [1, 2].map((v) =>
+            userRepository.create({
+                id: v,
+                email: `${v}@test.com`,
+                password: `123123`,
+            }),
+        );
+        await userRepository.save(users);
+
+        directors = [1, 2].map((v) =>
+            directorRepository.create({
+                id: v,
+                dob: new Date('2025-11-08'),
+                nationality: 'South Korea',
+                name: `Director Name ${v}`,
+            }),
+        );
+        await directorRepository.save(directors);
+
+        genres = [1, 2].map((v) =>
+            genreRepository.create({
+                id: v,
+                name: `Genre ${v}`,
+            }),
+        );
+        await genreRepository.save(genres);
+
+        movies = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map((v) =>
+            movieRepository.create({
+                id: v,
+                title: `Movie ${v}`,
+                creator: users[0],
+                genres,
+                likeCount: 0,
+                dislikeCount: 0,
+                detail: movieDetailRepository.create({
+                    detail: `Movie Detail ${v}`,
+                }),
+                movieFilePath: 'movies/movie1.mp4',
+                director: directors[0],
+                createdAt: new Date(`2024-11-08`),
+            }),
+        );
+        await movieRepository.save(movies);
+    });
+});
+```
