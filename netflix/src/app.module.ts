@@ -58,6 +58,9 @@ import * as winston from 'winston';
                 database: configService.get<string>(envVariableKeys.dbDatabase),
                 entities: [path.join(__dirname, '**/*.entity{.ts,.js}')],
                 synchronize: true,
+                ssl: {
+                    rejectUnauthorized: false,
+                },
                 // logging: true,
             }),
             inject: [ConfigService], // IoC 컨테이너에서 ConfigService를 inject
