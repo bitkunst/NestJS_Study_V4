@@ -1,11 +1,14 @@
 import { BadRequestException, Controller, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { CommonService } from './common.service';
 
 @ApiTags('common')
 @ApiBearerAuth()
 @Controller('common')
 export class CommonController {
+    constructor(private readonly commonService: CommonService) {}
+
     @Post('video')
     @UseInterceptors(
         FileInterceptor('video', {
@@ -24,6 +27,13 @@ export class CommonController {
     createVideo(@UploadedFile() video: Express.Multer.File) {
         return {
             fileName: video.filename,
+        };
+    }
+
+    @Post('presigned-url')
+    async createPresignedUrl() {
+        return {
+            url: await this.commonService.createPresignedUrl(),
         };
     }
 }
