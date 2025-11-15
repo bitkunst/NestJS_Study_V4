@@ -57,10 +57,12 @@ import * as winston from 'winston';
                 password: configService.get<string>(envVariableKeys.dbPassword),
                 database: configService.get<string>(envVariableKeys.dbDatabase),
                 entities: [path.join(__dirname, '**/*.entity{.ts,.js}')],
-                synchronize: true,
-                ssl: {
-                    rejectUnauthorized: false,
-                },
+                synchronize: configService.get<string>(envVariableKeys.env) === 'prod' ? false : true,
+                ...(configService.get<string>(envVariableKeys.env) === 'prod' && {
+                    ssl: {
+                        rejectUnauthorized: false,
+                    },
+                }),
                 // logging: true,
             }),
             inject: [ConfigService], // IoC 컨테이너에서 ConfigService를 inject
