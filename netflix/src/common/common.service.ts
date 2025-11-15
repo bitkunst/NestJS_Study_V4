@@ -2,46 +2,54 @@ import { BadRequestException, Injectable, InternalServerErrorException } from '@
 import { SelectQueryBuilder } from 'typeorm';
 import { PagePaginationDto } from './dto/page-pagination.dto';
 import { CursorPaginationDto } from './dto/cursor-pagination.dto';
-import AWS from 'aws-sdk';
+// import AWS from 'aws-sdk';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { ObjectCannedACL, PutObjectCommand, PutObjectCommandInput, S3 } from '@aws-sdk/client-s3';
 import { v4 as uuid } from 'uuid';
 import { envVariableKeys } from './constant/env.constant';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class CommonService {
-    private s3: AWS.S3;
+    // private s3: AWS.S3;
+    private s3: S3;
 
     constructor(protected readonly configService: ConfigService) {
-        // AWS SDK 초기화
-        AWS.config.update({
+        // AWS SDK 초기화 (v2)
+        // JS SDK v3 does not support global configuration.
+        // Codemod has attempted to pass values to each service client in this file.
+        // You may need to update clients outside of this file, if they use global config.
+        // AWS.config.update({
+        //     credentials: {
+        //         accessKeyId: configService.get<string>(envVariableKeys.awsAccessKey),
+        //         secretAccessKey: configService.get<string>(envVariableKeys.awsSecretAccessKey),
+        //     },
+        //     region: configService.get<string>(envVariableKeys.awsRegion),
+        // });
+
+        this.s3 = new S3({
             credentials: {
                 accessKeyId: configService.get<string>(envVariableKeys.awsAccessKey),
                 secretAccessKey: configService.get<string>(envVariableKeys.awsSecretAccessKey),
             },
             region: configService.get<string>(envVariableKeys.awsRegion),
         });
-
-        this.s3 = new AWS.S3();
     }
 
     async saveMovieToPermanentStorage(fileName: string) {
         try {
             const bucketName = this.configService.get<string>(envVariableKeys.bucketName);
-            await this.s3
-                .copyObject({
-                    Bucket: bucketName,
-                    CopySource: `${bucketName}/public/temp/${fileName}`,
-                    Key: `public/movie/${fileName}`,
-                    ACL: 'public-read',
-                })
-                .promise();
+            await this.s3.copyObject({
+                Bucket: bucketName,
+                CopySource: `${bucketName}/public/temp/${fileName}`,
+                Key: `public/movie/${fileName}`,
+                ACL: ObjectCannedACL.public_read,
+            });
 
-            await this.s3
-                .deleteObject({
-                    Bucket: bucketName,
-                    Key: `public/temp/${fileName}`,
-                })
-                .promise();
+            await this.s3.deleteObject({
+                Bucket: bucketName,
+                Key: `public/temp/${fileName}`,
+            });
         } catch (error) {
             console.error(error);
             throw new InternalServerErrorException('S3 저장 실패');
@@ -49,15 +57,16 @@ export class CommonService {
     }
 
     async createPresignedUrl(expiresIn: number = 300) {
-        const params = {
+        const params: PutObjectCommandInput = {
             Bucket: this.configService.get<string>(envVariableKeys.bucketName),
             Key: `public/temp/${uuid()}.mp4`,
-            Expires: expiresIn,
-            ACL: 'public-read',
+            ACL: ObjectCannedACL.public_read,
         };
 
         try {
-            const url = await this.s3.getSignedUrlPromise('putObject', params);
+            const url = await getSignedUrl(this.s3, new PutObjectCommand(params), {
+                expiresIn,
+            });
             return url;
         } catch (error) {
             console.error(error);
