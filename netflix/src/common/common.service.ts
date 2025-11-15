@@ -11,7 +11,7 @@ import { ConfigService } from '@nestjs/config';
 export class CommonService {
     private s3: AWS.S3;
 
-    constructor(private readonly configService: ConfigService) {
+    constructor(protected readonly configService: ConfigService) {
         // AWS SDK 초기화
         AWS.config.update({
             credentials: {
@@ -24,10 +24,34 @@ export class CommonService {
         this.s3 = new AWS.S3();
     }
 
+    async saveMovieToPermanentStorage(fileName: string) {
+        try {
+            const bucketName = this.configService.get<string>(envVariableKeys.bucketName);
+            await this.s3
+                .copyObject({
+                    Bucket: bucketName,
+                    CopySource: `${bucketName}/public/temp/${fileName}`,
+                    Key: `public/movie/${fileName}`,
+                    ACL: 'public-read',
+                })
+                .promise();
+
+            await this.s3
+                .deleteObject({
+                    Bucket: bucketName,
+                    Key: `public/temp/${fileName}`,
+                })
+                .promise();
+        } catch (error) {
+            console.error(error);
+            throw new InternalServerErrorException('S3 저장 실패');
+        }
+    }
+
     async createPresignedUrl(expiresIn: number = 300) {
         const params = {
             Bucket: this.configService.get<string>(envVariableKeys.bucketName),
-            Key: `temp/${uuid()}.mp4`,
+            Key: `public/temp/${uuid()}.mp4`,
             Expires: expiresIn,
             ACL: 'public-read',
         };
