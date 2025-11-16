@@ -52,7 +52,7 @@ jobs:
       - name: Set Up NodeJS
         uses: actions/setup-node@v3 # Node.js 설치 (github actions 제공 커맨드)
         with: # 옵션 설정
-          node-version: "18"
+          node-version: "20"
 
       - name: Create Env File
         env:
