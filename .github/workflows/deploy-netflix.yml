@@ -42,7 +42,7 @@ jobs:
     # 실행할 steps
     steps:
       - name: Checkout Code
-        uses: actions/checout@v3 # 최신 버전의 소스코드 가져오기 (github actions 제공 커맨드)
+        uses: actions/checkout@v3 # 최신 버전의 소스코드 가져오기 (github actions 제공 커맨드)
 
       - name: Set Up NodeJS
         uses: actions/setup-node@v3 # Node.js 설치 (github actions 제공 커맨드)
