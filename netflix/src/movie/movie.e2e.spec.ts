@@ -51,12 +51,12 @@ describe('MovieController (e2e)', () => {
         const movieUserLikeRepository = dataSource.getRepository(MovieUserLike);
 
         // 데이터 seeding 전에 전체 데이터 삭제
-        await movieUserLikeRepository.delete({});
-        await movieRepository.delete({});
-        await genreRepository.delete({});
-        await directorRepository.delete({});
-        await userRepository.delete({});
-        await movieDetailRepository.delete({});
+        await movieUserLikeRepository.createQueryBuilder().delete().execute();
+        await movieRepository.createQueryBuilder().delete().execute();
+        await genreRepository.createQueryBuilder().delete().execute();
+        await directorRepository.createQueryBuilder().delete().execute();
+        await userRepository.createQueryBuilder().delete().execute();
+        await movieDetailRepository.createQueryBuilder().delete().execute();
 
         // Seed 데이터 생성
         users = [1, 2].map((v) =>
