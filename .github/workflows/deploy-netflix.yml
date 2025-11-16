@@ -112,18 +112,15 @@ jobs:
           mkdir -p ./public/movie
           mkdir -p ./public/temp
 
-      - name: Install pnpm
-        run: npm i -g pnpm
-
       - name: Install Dependencies
-        run: pnpm i
+        run: npm i
 
       - name: Build Project
-        run: pnpm run build
+        run: npm run build
 
       # CI - 테스트 실행 (실패시 다음 step으로 넘어가지 않는다)
       - name: Run Test
-        run: pnpm run test
+        run: npm run test
 
       - name: Install Typeorm
         run: npm i -g typeorm
