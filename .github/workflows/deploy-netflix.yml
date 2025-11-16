@@ -19,7 +19,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: ./netflix
+        working-directory: netflix
 
     # Github Actions 파이프라인 코드가 실행되는 컨테이너 외에 또 다른 서비스를 실행시킬 수 있다
     # 도커 실행 문법과 유사
@@ -41,11 +41,11 @@ jobs:
 
     # 실행할 steps
     steps:
-      - name: Check Working Directory
-        run: pwd
-
       - name: Checkout Code
         uses: actions/checkout@v3 # 최신 버전의 소스코드 가져오기 (github actions 제공 커맨드)
+
+      - name: Check Working Directory
+        run: pwd
 
       - name: Set Up NodeJS
         uses: actions/setup-node@v3 # Node.js 설치 (github actions 제공 커맨드)
