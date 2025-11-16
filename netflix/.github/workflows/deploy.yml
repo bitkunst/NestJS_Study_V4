@@ -1,15 +1,36 @@
 name: Deploy to AWS Elastic Beanstalk
 
 on:
-    push:
+    pull_request:
+        types:
+            - closed
         branches:
             - main
 
 jobs:
     # 커스텀 이름 지정
     build-and-deploy:
+        if: github.event.pull_request.merged == true
         # OS 지정 (실행 환경)
         runs-on: ubuntu-latest
+
+        # Github Actions 파이프라인 코드가 실행되는 컨테이너 외에 또 다른 서비스를 실행시킬 수 있다
+        # 도커 실행 문법과 유사
+        services:
+            postgres:
+                image: postgres:16
+                env:
+                    POSTGRES_USER: postgres # 기본 환경변수 (required)
+                    POSTGRES_PASSWORD: postgres # 기본 환경변수 (required)
+                # 컨테이너가 실행이 되고 실제 PostgreSQL이 업타임이 다 올라왔는지까지는 확인 X
+                # PostgreSQL이 완전히 준비가 되었을 때 steps 단계로 넘어갈 수 있도록 해야한다 -> 준비상태 체크 스크립트 작성 필요
+                options: >-
+                    --health-cmd pg_isready
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 5
+                ports:
+                    - 5432:5432
 
         # 실행할 steps
         steps:
@@ -21,11 +42,80 @@ jobs:
               with: # 옵션 설정
                   node-version: '18'
 
+            - name: Create Env File
+              env:
+                  ENV: ${{secrets.ENV}}
+                  DB_TYPE: ${{secrets.DB_TYPE}}
+                  DB_HOST: ${{secrets.DB_HOST}}
+                  DB_PORT: ${{secrets.DB_PORT}}
+                  DB_USERNAME: ${{secrets.DB_USERNAME}}
+                  DB_PASSWORD: ${{secrets.DB_PASSWORD}}
+                  DB_DATABASE: ${{secrets.DB_DATABASE}}
+                  HASH_ROUNDS: ${{secrets.HASH_ROUNDS}}
+                  ACCESS_TOKEN_SECRET: ${{secrets.ACCESS_TOKEN_SECRET}}
+                  REFRESH_TOKEN_SECRET: ${{secrets.REFRESH_TOKEN_SECRET}}
+                  AWS_ACCESS_KEY: ${{secrets.AWS_ACCESS_KEY}}
+                  AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+                  AWS_REGION: ${{secrets.AWS_REGION}}
+                  BUCKET_NAME: ${{secrets.BUCKET_NAME}}
+              run: |
+                  touch .env.test
+                  echo ENV="test" >> .env.test
+                  echo DB_TYPE="$DB_TYPE" >> .env.test
+                  echo DB_HOST="localhost" >> .env.test
+                  echo DB_PORT="$DB_PORT" >> .env.test
+                  echo DB_USERNAME="postgres" >> .env.test
+                  echo DB_PASSWORD="postgres" >> .env.test
+                  echo DB_DATABASE="$DB_DATABASE" >> .env.test
+                  echo HASH_ROUNDS="$HASH_ROUNDS" >> .env.test
+                  echo ACCESS_TOKEN_SECRET="$ACCESS_TOKEN_SECRET" >> .env.test
+                  echo REFRESH_TOKEN_SECRET="$REFRESH_TOKEN_SECRET" >> .env.test
+                  echo AWS_ACCESS_KEY="$AWS_ACCESS_KEY" >> .env.test
+                  echo AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY" >> .env.test
+                  echo AWS_REGION="$AWS_REGION" >> .env.test
+                  echo BUCKET_NAME="$BUCKET_NAME" >> .env.test
+                  echo ".env.test created"
+                  cat .env.test
+
+                  touch .env
+                  echo ENV="$ENV" >> .env
+                  echo DB_TYPE="$DB_TYPE" >> .env
+                  echo DB_HOST="$DB_HOST" >> .env
+                  echo DB_PORT="$DB_PORT" >> .env
+                  echo DB_USERNAME="$DB_USERNAME" >> .env
+                  echo DB_PASSWORD="$DB_PASSWORD" >> .env
+                  echo DB_DATABASE="$DB_DATABASE" >> .env
+                  echo HASH_ROUNDS="$HASH_ROUNDS" >> .env
+                  echo ACCESS_TOKEN_SECRET="$ACCESS_TOKEN_SECRET" >> .env
+                  echo REFRESH_TOKEN_SECRET="$REFRESH_TOKEN_SECRET" >> .env
+                  echo AWS_ACCESS_KEY="$AWS_ACCESS_KEY" >> .env
+                  echo AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY" >> .env
+                  echo AWS_REGION="$AWS_REGION" >> .env
+                  echo BUCKET_NAME="$BUCKET_NAME" >> .env
+                  echo ".env created"
+                  cat .env
+
+            - name: Create Folders
+              run: |
+                  mkdir -p ./public/movie
+                  mkdir -p ./public/temp
+
             - name: Install Dependencies
               run: npm i
 
             - name: Build Project
               run: npm run build
+
+            # CI - 테스트 실행 (실패시 다음 step으로 넘어가지 않는다)
+            - name: Run Test
+              run: npm run test
+
+            - name: Install Typeorm
+              run: npm i -g typeorm
+
+            # CI - 마이그레이션 실행
+            - name: Run Migration
+              run: typeorm migration:run -d ./dist/database/data-source.js
 
             - name: Zip Artifact For Deployment # Elastic Beanstalk 배포를 위해 zip 파일 생성
               run: zip -r deploy.zip . # Ubuntu 커맨드
@@ -39,6 +129,7 @@ jobs:
                   aws configure set region $AWS_REGION
                   aws s3 cp deploy.zip s3://nestjs-netflix-bucket/deploy.zip
 
+            # CD - Elastic Beanstalk 배포
             - name: Deploy to AWS Elastic Beanstalk
               env: # 환경변수 설정
                   AWS_ACCESS_KEY: ${{secrets.AWS_ACCESS_KEY}} # Github Actions에서 설정한 repository secrets
