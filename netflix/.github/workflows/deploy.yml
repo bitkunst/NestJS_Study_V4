@@ -1,0 +1,56 @@
+name: Deploy to AWS Elastic Beanstalk
+
+on:
+    push:
+        branches:
+            - main
+
+jobs:
+    # 커스텀 이름 지정
+    build-and-deploy:
+        # OS 지정 (실행 환경)
+        runs-on: ubuntu-latest
+
+        # 실행할 steps
+        steps:
+            - name: Checkout Code
+              uses: actions/checout@v3 # 최신 버전의 소스코드 가져오기 (github actions 제공 커맨드)
+
+            - name: Set Up NodeJS
+              uses: actions/setup-node@v3 # Node.js 설치 (github actions 제공 커맨드)
+              with: # 옵션 설정
+                  node-version: '18'
+
+            - name: Install Dependencies
+              run: npm i
+
+            - name: Build Project
+              run: npm run build
+
+            - name: Zip Artifact For Deployment # Elastic Beanstalk 배포를 위해 zip 파일 생성
+              run: zip -r deploy.zip . # Ubuntu 커맨드
+
+            - name: Upload to S3
+              env: # 환경변수 설정
+                  AWS_ACCESS_KEY: ${{secrets.AWS_ACCESS_KEY}} # Github Actions에서 설정한 repository secrets
+                  AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+                  AWS_REGION: ${{secrets.AWS_REGION}}
+              run: | # | 밑에 있는 커맨드를 순서대로 실행하겠다는 의미
+                  aws configure set region $AWS_REGION
+                  aws s3 cp deploy.zip s3://nestjs-netflix-bucket/deploy.zip
+
+            - name: Deploy to AWS Elastic Beanstalk
+              env: # 환경변수 설정
+                  AWS_ACCESS_KEY: ${{secrets.AWS_ACCESS_KEY}} # Github Actions에서 설정한 repository secrets
+                  AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+                  AWS_REGION: ${{secrets.AWS_REGION}}
+              run: |
+                  aws elasticbeanstalk create-application-version \
+                    --application-name "nestjs-netflix" \
+                    --version-label $GITHUB_SHA \
+                    --source-bundle S3Bucket="nestjs-netflix-bucket",S3Key="deploy.zip"
+
+                  aws elasticbeanstalk update-environment \
+                    --application-name "nestjs-netflix" \
+                    --environment-name "Nestjs-netflix-env" \
+                    --vesion-label $GITHUB_SHA
