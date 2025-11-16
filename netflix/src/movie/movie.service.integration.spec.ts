@@ -12,6 +12,7 @@ import { DataSource } from 'typeorm';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { NotFoundException } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 
 // 테스트 목적: TypeORM 모듈 API가 우리가 작성한 로직과 정상적으로 실행이 되는가
 // 검증하고 싶은 것은 TypeORM과 우리 로직 간의 Integration (Unit과 Unit의 조합)
@@ -41,6 +42,7 @@ describe('MovieService - Integration Test', () => {
                     logging: false,
                 }), // 실제 데이터베이스 연동은 e2e 테스트에서 진행
                 TypeOrmModule.forFeature([Movie, MovieDetail, Director, Genre, User, MovieUserLike]),
+                ConfigModule.forRoot(),
             ],
             providers: [MovieService],
         }).compile();
