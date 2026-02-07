@@ -35,6 +35,13 @@ export class User {
     @Column()
     name: string;
 
+    // 첫번째 파라미터
+    // -> 관계의 대상 엔티티(target entity)를 지정
+    // -> "One-to-Many"에서 "Many" 쪽 엔티티가 무엇인지 알려줌
+    // 두번째 파라미터
+    // -> 양방향 관계(Bidirectional Relationship)를 설정
+    // -> "Many" 쪽 엔티티(Photo)에서 이 관계를 참조하는 필드명을 지정
+    // -> TypeORM에게 "반대편 엔티티의 어느 필드가 이 관계를 가리키는지" 알려줌
     @OneToMany(() => Photo, (photo) => photo.user)
     photos: Photo[];
 }
