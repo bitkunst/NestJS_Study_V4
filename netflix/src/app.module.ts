@@ -22,6 +22,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { ThrottleInterceptor } from './common/interceptor/throttle.interceptor';
 import { ScheduleModule } from '@nestjs/schedule';
 import { WinstonModule } from 'nest-winston';
+import { ChatModule } from './chat/chat.module';
 import * as winston from 'winston';
 
 /**
@@ -111,6 +112,7 @@ import * as winston from 'winston';
         GenreModule,
         AuthModule,
         UserModule,
+        ChatModule,
     ],
     providers: [
         // providers 배열에 나열된 순서대로 해당 가드들을 차례대로 실행
