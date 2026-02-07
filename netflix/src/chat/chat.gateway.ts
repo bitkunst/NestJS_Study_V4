@@ -1,10 +1,53 @@
-import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
+import {
+    ConnectedSocket,
+    MessageBody,
+    OnGatewayConnection,
+    OnGatewayDisconnect,
+    SubscribeMessage,
+    WebSocketGateway,
+} from '@nestjs/websockets';
 import { ChatService } from './chat.service';
 import { Socket } from 'socket.io';
+import { AuthService } from 'src/auth/auth.service';
 
+// Websocket 인증
+// -> 처음에 연결할 때에만 인증된 사용자인지 확인
+// -> 메시지를 보낼 때마다 인증할 필요 X
 @WebSocketGateway()
-export class ChatGateway {
-    constructor(private readonly chatService: ChatService) {}
+export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
+    constructor(
+        private readonly chatService: ChatService,
+        private readonly authService: AuthService,
+    ) {}
+
+    handleDisconnect(client: Socket) {
+        const user = client.data.user;
+        if (user) {
+            this.chatService.removeClient(user.sub);
+        }
+        return;
+    }
+
+    // 해당 게이트웨이에 연결시 handleConnection 메소드 호출
+    async handleConnection(client: Socket) {
+        // 인증 프로세스 구현 (토큰 검증)
+        try {
+            const rawToken = client.handshake.headers.authorization;
+
+            const payload = await this.authService.parseBearerToken(rawToken ?? '', false);
+
+            if (payload) {
+                client.data.user = payload;
+                this.chatService.registerClient(payload.sub, client);
+                await this.chatService.joinUserRooms(payload, client);
+            } else {
+                client.disconnect();
+            }
+        } catch (error) {
+            console.error(error);
+            client.disconnect();
+        }
+    }
 
     // @SubscribeMessage() 파라미터로 이벤트명 전달
     @SubscribeMessage('receiveMessage')
