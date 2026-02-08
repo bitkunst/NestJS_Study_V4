@@ -1,7 +1,7 @@
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { MovieModule } from './movie/movie.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConditionalModule, ConfigModule, ConfigService } from '@nestjs/config';
 import { DirectorModule } from './director/director.module';
 import { GenreModule } from './genre/genre.module';
 import { AuthModule } from './auth/auth.module';
@@ -24,6 +24,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { WinstonModule } from 'nest-winston';
 import { ChatModule } from './chat/chat.module';
 import * as winston from 'winston';
+import { WorkerModule } from './worker/worker.module';
 
 /**
  * @dev
@@ -113,6 +114,7 @@ import * as winston from 'winston';
         AuthModule,
         UserModule,
         ChatModule,
+        ConditionalModule.registerWhen(WorkerModule, (env: NodeJS.ProcessEnv) => env['TYPE'] === 'worker'),
     ],
     providers: [
         // providers 배열에 나열된 순서대로 해당 가드들을 차례대로 실행
