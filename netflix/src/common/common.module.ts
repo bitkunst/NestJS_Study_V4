@@ -10,6 +10,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Movie } from 'src/movie/entity/movie.entity';
 import { DefaultLogger } from './logger/default.logger';
 import { BullModule } from '@nestjs/bullmq';
+import { ConfigService } from '@nestjs/config';
+import { envVariableKeys } from './constant/env.constant';
 
 @Module({
     imports: [
@@ -27,13 +29,16 @@ import { BullModule } from '@nestjs/bullmq';
             }),
         }),
         TypeOrmModule.forFeature([Movie]),
-        BullModule.forRoot({
-            connection: {
-                host: 'redis-12971.c340.ap-northeast-2-1.ec2.cloud.redislabs.com',
-                port: 12971,
-                username: 'default',
-                password: 'pIkAYKviRjhgyNoeq2VmBqNywBbeyqkt',
-            },
+        BullModule.forRootAsync({
+            useFactory: (configService: ConfigService) => ({
+                connection: {
+                    host: configService.get<string>(envVariableKeys.redisHost),
+                    port: Number(configService.get<number>(envVariableKeys.redisPort)),
+                    username: configService.get<string>(envVariableKeys.redisUsername),
+                    password: configService.get<string>(envVariableKeys.redisPassword),
+                },
+            }),
+            inject: [ConfigService],
         }),
         BullModule.registerQueue({
             name: 'thumbnail-generation', // Queue 이름 (실제 작업에 대한 이름)

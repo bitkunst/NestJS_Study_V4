@@ -52,6 +52,10 @@ import { WorkerModule } from './worker/worker.module';
                 AWS_SECRET_ACCESS_KEY: Joi.string().required(),
                 AWS_REGION: Joi.string().required(),
                 BUCKET_NAME: Joi.string().required(),
+                REDIS_HOST: Joi.string().required(),
+                REDIS_PORT: Joi.number().required(),
+                REDIS_USERNAME: Joi.string().required(),
+                REDIS_PASSWORD: Joi.string().required(),
             }),
         }),
         TypeOrmModule.forRootAsync({
